@@ -32,3 +32,8 @@ export const DEFAULT_INFERENCE_ENDPOINTS_TABLE_STATE: AllInferenceEndpointsTable
   filterOptions: DEFAULT_FILTER_OPTIONS,
   queryParams: DEFAULT_QUERY_PARAMS,
 };
+
+export const PRECONFIGURED_ENDPOINTS = {
+  ELSER: '.elser-2',
+  E5: '.multi-e5-small',
+};
