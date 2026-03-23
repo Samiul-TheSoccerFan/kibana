@@ -7,11 +7,12 @@
 
 import type { CriteriaWithPagination } from '@elastic/eui';
 import { EuiInMemoryTable, EuiSkeletonText, EuiText } from '@elastic/eui';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { labels } from '../../../utils/i18n';
 import { useConnectorsTableColumns } from './connectors_table_columns';
+import { useConnectorsTableSearch } from './connectors_table_search';
 
 export const AgentBuilderConnectorsTable = memo(() => {
   const { connectors, isLoading, error } = useListConnectors({});
@@ -19,10 +20,7 @@ export const AgentBuilderConnectorsTable = memo(() => {
   const [tablePageSize, setTablePageSize] = useState(10);
   const [selectedConnectors, setSelectedConnectors] = useState<ConnectorItem[]>([]);
   const columns = useConnectorsTableColumns();
-
-  useEffect(() => {
-    setTablePageIndex(0);
-  }, [connectors]);
+  const searchConfig = useConnectorsTableSearch();
 
   return (
     <EuiInMemoryTable
@@ -39,6 +37,7 @@ export const AgentBuilderConnectorsTable = memo(() => {
       items={connectors as ConnectorItem[]}
       itemId="id"
       error={error ? labels.connectors.listConnectorsErrorMessage : undefined}
+      search={searchConfig}
       onTableChange={({ page }: CriteriaWithPagination<ConnectorItem>) => {
         if (page) {
           setTablePageIndex(page.index);
