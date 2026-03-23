@@ -825,6 +825,161 @@ export const labels = {
         values: { pluginId },
       }),
   },
+  connectors: {
+    title: i18n.translate('xpack.agentBuilder.connectors.title', {
+      defaultMessage: 'Connectors',
+    }),
+    pageDescription: i18n.translate('xpack.agentBuilder.connectors.pageDescription', {
+      defaultMessage:
+        'Manage connectors for your agents. Connectors with workflow definitions will automatically create tools when configured.',
+    }),
+    createButton: i18n.translate('xpack.agentBuilder.connectors.createButton', {
+      defaultMessage: 'Create connector',
+    }),
+
+    // Table columns
+    nameColumn: i18n.translate('xpack.agentBuilder.connectors.column.name', {
+      defaultMessage: 'Name',
+    }),
+    typeColumn: i18n.translate('xpack.agentBuilder.connectors.column.type', {
+      defaultMessage: 'Type',
+    }),
+    connectorsLabel: i18n.translate('xpack.agentBuilder.connectors.connectorsLabel', {
+      defaultMessage: 'Connectors',
+    }),
+
+    // Table
+    tableCaption: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.tableCaption', {
+        defaultMessage: 'Available connectors: {count} connectors',
+        values: { count },
+      }),
+    noConnectorsMessage: i18n.translate('xpack.agentBuilder.connectors.noConnectorsMessage', {
+      defaultMessage: "It looks like you don't have any connectors configured yet.",
+    }),
+    noConnectorsMatchMessage: i18n.translate(
+      'xpack.agentBuilder.connectors.noConnectorsMatchMessage',
+      {
+        defaultMessage: 'No connectors match your search.',
+      }
+    ),
+    listConnectorsErrorMessage: i18n.translate(
+      'xpack.agentBuilder.connectors.listConnectorsErrorMessage',
+      {
+        defaultMessage: 'Failed to fetch connectors',
+      }
+    ),
+
+    // Search
+    searchConnectorsPlaceholder: i18n.translate(
+      'xpack.agentBuilder.connectors.searchConnectorsPlaceholder',
+      {
+        defaultMessage: 'Search',
+      }
+    ),
+    typeFilter: i18n.translate('xpack.agentBuilder.connectors.typeFilter', {
+      defaultMessage: 'Type',
+    }),
+
+    // Actions
+    editConnectorButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.editConnectorButtonLabel',
+      {
+        defaultMessage: 'Edit',
+      }
+    ),
+    deleteConnectorButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.deleteConnectorButtonLabel',
+      {
+        defaultMessage: 'Delete',
+      }
+    ),
+    connectorContextMenuButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.connectorContextMenuButtonLabel',
+      {
+        defaultMessage: 'Connector context menu',
+      }
+    ),
+
+    // Bulk actions
+    deleteSelectedConnectorsButtonLabel: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.deleteSelectedConnectorsButtonLabel', {
+        defaultMessage: 'Delete {count, plural, one {# Connector} other {# Connectors}}',
+        values: { count },
+      }),
+    selectAllConnectorsButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.selectAllConnectorsButtonLabel',
+      {
+        defaultMessage: 'Select all',
+      }
+    ),
+    clearSelectionButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.clearSelectionButtonLabel',
+      {
+        defaultMessage: 'Clear selection',
+      }
+    ),
+
+    // Delete modal
+    deleteConnectorTitle: (name: string) =>
+      i18n.translate('xpack.agentBuilder.connectors.deleteConnectorTitle', {
+        defaultMessage: 'Delete {name}?',
+        values: { name },
+      }),
+    deleteConnectorCancelButton: i18n.translate(
+      'xpack.agentBuilder.connectors.deleteConnectorCancelButton',
+      {
+        defaultMessage: 'Cancel',
+      }
+    ),
+    deleteConnectorConfirmButton: i18n.translate(
+      'xpack.agentBuilder.connectors.deleteConnectorConfirmButton',
+      {
+        defaultMessage: 'Delete connector',
+      }
+    ),
+    deleteConnectorConfirmationText: i18n.translate(
+      'xpack.agentBuilder.connectors.deleteConnectorConfirmationText',
+      {
+        defaultMessage: 'This action will permanently remove the connector. This cannot be undone.',
+      }
+    ),
+
+    // Bulk delete modal
+    bulkDeleteConnectorsTitle: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.bulkDeleteConnectorsTitle', {
+        defaultMessage: 'Delete {count, plural, one {# connector} other {# connectors}}?',
+        values: { count },
+      }),
+    bulkDeleteConnectorsConfirmationText: i18n.translate(
+      'xpack.agentBuilder.connectors.bulkDeleteConnectorsConfirmationText',
+      {
+        defaultMessage: "You can't recover deleted connectors.",
+      }
+    ),
+
+    // Toasts
+    deleteConnectorSuccessToast: (name: string) =>
+      i18n.translate('xpack.agentBuilder.connectors.deleteConnectorSuccessToast', {
+        defaultMessage: 'Connector "{name}" deleted',
+        values: { name },
+      }),
+    deleteConnectorErrorToast: (name: string) =>
+      i18n.translate('xpack.agentBuilder.connectors.deleteConnectorErrorToast', {
+        defaultMessage: 'Unable to delete connector "{name}"',
+        values: { name },
+      }),
+    bulkDeleteConnectorsSuccessToast: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.bulkDeleteConnectorsSuccessToast', {
+        defaultMessage: 'Deleted {count, plural, one {# connector} other {# connectors}}',
+        values: { count },
+      }),
+    bulkDeleteConnectorsErrorToast: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.bulkDeleteConnectorsErrorToast', {
+        defaultMessage: 'Unable to delete {count, plural, one {# connector} other {# connectors}}',
+        values: { count },
+      }),
+  },
   agents: {
     title: i18n.translate('xpack.agentBuilder.agents.list.title', { defaultMessage: 'Agents' }),
     newAgent: i18n.translate('xpack.agentBuilder.agents.new.title', {
