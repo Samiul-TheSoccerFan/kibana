@@ -6,14 +6,23 @@
  */
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
-import { EuiLink } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
+import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
+import { ConnectorTypeIcon } from '../connector_type_icon';
 
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
   const { editConnector } = useConnectorsActions();
+  const {
+    services: {
+      plugins: { triggersActionsUi },
+    },
+  } = useKibana();
+
+  const { actionTypeRegistry } = triggersActionsUi;
 
   return useMemo(
     () => [
@@ -35,9 +44,24 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         field: 'actionTypeId',
         name: labels.connectors.typeColumn,
         sortable: true,
-        render: (actionTypeId: string) => actionTypeId,
+        render: (actionTypeId: string) => {
+          const typeName = actionTypeRegistry.has(actionTypeId)
+            ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
+            : actionTypeId;
+
+          return (
+            <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+              <EuiFlexItem grow={false}>
+                <ConnectorTypeIcon actionTypeId={actionTypeId} />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiText size="s">{typeName}</EuiText>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          );
+        },
       },
     ],
-    [editConnector]
+    [editConnector, actionTypeRegistry]
   );
 };
