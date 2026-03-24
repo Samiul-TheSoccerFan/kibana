@@ -12,6 +12,7 @@ import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { labels } from '../../../utils/i18n';
 import { useConnectorsTableColumns } from './connectors_table_columns';
+import { ConnectorsTableHeader } from './connectors_table_header';
 import { connectorQuickActionsHoverStyles } from './connectors_table_quick_actions';
 import { useConnectorsTableSearch } from './connectors_table_search';
 
@@ -36,6 +37,17 @@ export const AgentBuilderConnectorsTable = memo(() => {
         }),
         connectorQuickActionsHoverStyles,
       ]}
+      childrenBetween={
+        <ConnectorsTableHeader
+          isLoading={isLoading}
+          pageIndex={tablePageIndex}
+          pageSize={tablePageSize}
+          connectors={connectors as ConnectorItem[]}
+          total={connectors.length}
+          selectedConnectors={selectedConnectors}
+          setSelectedConnectors={setSelectedConnectors}
+        />
+      }
       loading={isLoading}
       columns={columns}
       items={connectors as ConnectorItem[]}
