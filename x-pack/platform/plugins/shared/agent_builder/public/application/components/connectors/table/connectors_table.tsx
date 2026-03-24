@@ -12,6 +12,7 @@ import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { labels } from '../../../utils/i18n';
 import { useConnectorsTableColumns } from './connectors_table_columns';
+import { connectorQuickActionsHoverStyles } from './connectors_table_quick_actions';
 import { useConnectorsTableSearch } from './connectors_table_search';
 
 export const AgentBuilderConnectorsTable = memo(() => {
@@ -26,12 +27,15 @@ export const AgentBuilderConnectorsTable = memo(() => {
     <EuiInMemoryTable
       tableCaption={labels.connectors.tableCaption(connectors.length)}
       data-test-subj="agentBuilderConnectorsTable"
-      css={({ euiTheme }) => ({
-        borderTop: `1px solid ${euiTheme.colors.borderBaseSubdued}`,
-        '& table': {
-          backgroundColor: 'transparent',
-        },
-      })}
+      css={[
+        ({ euiTheme }) => ({
+          borderTop: `1px solid ${euiTheme.colors.borderBaseSubdued}`,
+          '& table': {
+            backgroundColor: 'transparent',
+          },
+        }),
+        connectorQuickActionsHoverStyles,
+      ]}
       loading={isLoading}
       columns={columns}
       items={connectors as ConnectorItem[]}
