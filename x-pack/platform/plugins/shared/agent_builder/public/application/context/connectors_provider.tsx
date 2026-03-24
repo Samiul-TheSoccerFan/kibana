@@ -7,6 +7,7 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { EuiConfirmModal, EuiText, useGeneratedHtmlId } from '@elastic/eui';
+import { FormattedMessage } from '@kbn/i18n-react';
 import type { ActionConnector } from '@kbn/alerts-ui-shared';
 import { AgentBuilderConnectorFeatureId } from '@kbn/actions-plugin/common';
 import { useQueryClient } from '@kbn/react-query';
@@ -42,6 +43,47 @@ export interface ConnectorsActionsContextType {
 }
 
 const ConnectorsActionsContext = createContext<ConnectorsActionsContextType | undefined>(undefined);
+
+const DeleteConnectorModalBody = ({
+  workflowsCount,
+  toolsCount,
+}: {
+  workflowsCount: number;
+  toolsCount: number;
+}) => {
+  if (workflowsCount > 0 || toolsCount > 0) {
+    return (
+      <p>
+        <FormattedMessage
+          id="xpack.agentBuilder.connectors.deleteConnectorConfirmationTextWithResources"
+          defaultMessage="This will also delete {workflows} and {tools}. This action cannot be undone."
+          values={{
+            workflows: (
+              <strong>
+                <FormattedMessage
+                  id="xpack.agentBuilder.connectors.deleteConnectorWorkflowCount"
+                  defaultMessage="{count, plural, one {# workflow} other {# workflows}}"
+                  values={{ count: workflowsCount }}
+                />
+              </strong>
+            ),
+            tools: (
+              <strong>
+                <FormattedMessage
+                  id="xpack.agentBuilder.connectors.deleteConnectorToolCount"
+                  defaultMessage="{count, plural, one {# tool} other {# tools}}"
+                  values={{ count: toolsCount }}
+                />
+              </strong>
+            ),
+          }}
+        />
+      </p>
+    );
+  }
+
+  return <p>{labels.connectors.deleteConnectorConfirmationText}</p>;
+};
 
 export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) => {
   const {
@@ -145,7 +187,12 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           confirmButtonText={labels.connectors.deleteConnectorConfirmButton}
           buttonColor="danger"
         >
-          <EuiText>{labels.connectors.deleteConnectorConfirmationText}</EuiText>
+          <EuiText>
+            <DeleteConnectorModalBody
+              workflowsCount={deleteConnectorTarget.workflowsCount}
+              toolsCount={deleteConnectorTarget.toolsCount}
+            />
+          </EuiText>
         </EuiConfirmModal>
       )}
 
@@ -161,7 +208,15 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           confirmButtonText={labels.connectors.deleteConnectorConfirmButton}
           buttonColor="danger"
         >
-          <EuiText>{labels.connectors.bulkDeleteConnectorsConfirmationText}</EuiText>
+          <EuiText>
+            <DeleteConnectorModalBody
+              workflowsCount={bulkDeleteConnectorTargets.reduce(
+                (sum, c) => sum + c.workflowsCount,
+                0
+              )}
+              toolsCount={bulkDeleteConnectorTargets.reduce((sum, c) => sum + c.toolsCount, 0)}
+            />
+          </EuiText>
         </EuiConfirmModal>
       )}
     </ConnectorsActionsContext.Provider>

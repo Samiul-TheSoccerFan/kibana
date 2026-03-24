@@ -17,7 +17,10 @@ export const getTechnicalPreviewWarning = (featureName: string) => {
  */
 export const AGENT_SOCKET_TIMEOUT_MS = 15 * 60 * 1000;
 
-export const toConnectorItem = (connector: Connector): ConnectorItem => {
+export const toConnectorItem = (
+  connector: Connector,
+  counts?: { toolsCount: number; workflowsCount: number }
+): ConnectorItem => {
   return {
     id: connector.id,
     name: connector.name,
@@ -28,5 +31,7 @@ export const toConnectorItem = (connector: Connector): ConnectorItem => {
     isMissingSecrets: connector.isMissingSecrets,
     isConnectorTypeDeprecated: connector.isConnectorTypeDeprecated,
     config: connector.config,
+    toolsCount: counts?.toolsCount ?? 0,
+    workflowsCount: counts?.workflowsCount ?? 0,
   };
 };

@@ -455,19 +455,49 @@ export function registerInternalToolsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [, pluginsStart] = await coreSetup.getStartServices();
+      const { tools: toolService } = getInternalServices();
       const actionsClient = await pluginsStart.actions.getActionsClientWithRequest(request);
-      const [allConnectors, compatibleTypes] = await Promise.all([
+      const [allConnectors, compatibleTypes, allTools] = await Promise.all([
         actionsClient.getAll(),
         actionsClient.listTypes({ featureId: AgentBuilderConnectorFeatureId }),
+        toolService.getRegistry({ request }).then((registry) => registry.list({})),
       ]);
 
       const compatibleTypeIds = new Set(compatibleTypes.map((t) => t.id));
       const { type } = request.query;
 
+      // Build connector → tools/workflows counts from tool tags
+      const connectorCounts = new Map<string, { toolsCount: number; workflowsCount: number }>();
+      for (const tool of allTools) {
+        if (!tool.tags) continue;
+        for (const tag of tool.tags) {
+          if (tag.startsWith('connector:')) {
+            const connectorId = tag.slice('connector:'.length);
+            let counts = connectorCounts.get(connectorId);
+            if (!counts) {
+              counts = { toolsCount: 0, workflowsCount: 0 };
+              connectorCounts.set(connectorId, counts);
+            }
+            counts.toolsCount++;
+            const workflowId = (tool.configuration as Record<string, unknown>)
+              ?.workflow_id as string;
+            if (workflowId) {
+              counts.workflowsCount++;
+            }
+          }
+        }
+      }
+
       const connectors: ConnectorItem[] = allConnectors
         .filter((connector) => compatibleTypeIds.has(connector.actionTypeId))
         .filter((connector) => (type ? connector.actionTypeId === type : true))
-        .map(toConnectorItem);
+        .map((connector) => {
+          const counts = connectorCounts.get(connector.id);
+          return toConnectorItem(connector, {
+            toolsCount: counts?.toolsCount ?? 0,
+            workflowsCount: counts?.workflowsCount ?? 0,
+          });
+        });
 
       return response.ok<ListConnectorsResponse>({
         body: {

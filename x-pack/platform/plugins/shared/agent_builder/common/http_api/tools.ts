@@ -188,6 +188,8 @@ export interface ConnectorItem {
   isSystemAction: boolean;
   isMissingSecrets?: boolean;
   isConnectorTypeDeprecated: boolean;
+  toolsCount: number;
+  workflowsCount: number;
 }
 
 export interface McpConnectorItem extends ConnectorItem {

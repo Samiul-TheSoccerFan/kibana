@@ -7,6 +7,8 @@
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
 import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
+import { WORKFLOWS_APP_ID } from '@kbn/deeplinks-workflows';
+import { trimStart } from 'lodash';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
@@ -15,6 +17,20 @@ import { labels } from '../../../utils/i18n';
 import { ConnectorTypeIcon } from '../connector_type_icon';
 import { ConnectorContextMenu } from './connectors_table_context_menu';
 import { ConnectorQuickActions } from './connectors_table_quick_actions';
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getWorkflowQueryPrefix(connector: ConnectorItem): string {
+  const connectorTypeKey = trimStart(connector.actionTypeId, '.');
+  return `${connectorTypeKey}.${slugify(connector.name)}`;
+}
 
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
   const { editConnector } = useConnectorsActions();
@@ -35,8 +51,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'name',
         name: labels.connectors.nameColumn,
-        sortable: true,
-        width: '60%',
+        width: '40%',
         render: (name: string, connector: ConnectorItem) => (
           <EuiLink
             data-test-subj={`agentBuilderConnectorsTableNameLink-${connector.id}`}
@@ -49,7 +64,6 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'actionTypeId',
         name: labels.connectors.typeColumn,
-        sortable: true,
         render: (actionTypeId: string) => {
           const typeName = actionTypeRegistry.has(actionTypeId)
             ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
@@ -68,6 +82,28 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         },
       },
       {
+        field: 'workflowsCount',
+        name: labels.connectors.workflowsColumn,
+        align: 'center',
+        render: (workflowsCount: number, connector: ConnectorItem) => {
+          if (workflowsCount === 0) {
+            return <EuiText size="s">0</EuiText>;
+          }
+          const query = getWorkflowQueryPrefix(connector);
+          const workflowsUrl = application.getUrlForApp(WORKFLOWS_APP_ID, {
+            path: `?query=${encodeURIComponent(query)}`,
+          });
+          return (
+            <EuiLink
+              href={workflowsUrl}
+              data-test-subj={`agentBuilderConnectorsWorkflowsLink-${connector.id}`}
+            >
+              <EuiText size="s">{workflowsCount}</EuiText>
+            </EuiLink>
+          );
+        },
+      },
+      {
         width: '100px',
         align: 'right',
         render: (connector: ConnectorItem) => (
@@ -78,6 +114,6 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         ),
       },
     ],
-    [editConnector, actionTypeRegistry, canDelete]
+    [editConnector, actionTypeRegistry, canDelete, application]
   );
 };
