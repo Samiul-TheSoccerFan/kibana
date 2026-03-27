@@ -117,5 +117,6 @@
     "@kbn/fs",
     "@kbn/react-hooks",
     "@kbn/search-inference-endpoints",
+    "@kbn/deeplinks-workflows",
   ]
 }
