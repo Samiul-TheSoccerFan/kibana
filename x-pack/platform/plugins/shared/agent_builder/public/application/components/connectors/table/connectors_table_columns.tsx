@@ -6,7 +6,7 @@
  */
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
-import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiLoadingSpinner, EuiText } from '@elastic/eui';
 import { WORKFLOWS_APP_ID } from '@kbn/deeplinks-workflows';
 import { trimStart } from 'lodash';
 import React, { useMemo } from 'react';
@@ -33,7 +33,7 @@ function getWorkflowQueryPrefix(connector: ConnectorItem): string {
 }
 
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
-  const { editConnector } = useConnectorsActions();
+  const { editConnector, isConnectorResourcesPending } = useConnectorsActions();
   const {
     services: { application },
   } = useKibana();
@@ -85,8 +85,13 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         field: 'workflowsCount',
         name: labels.connectors.workflowsColumn,
         align: 'center',
-        render: (workflowsCount: number, connector: ConnectorItem) => {
-          if (workflowsCount === 0) {
+        render: (workflowsCount: number | null, connector: ConnectorItem) => {
+          // null + pending = lifecycle handler still running, show spinner
+          // null + not pending = timeout occurred, show 0
+          if (workflowsCount === null) {
+            if (isConnectorResourcesPending(connector.id)) {
+              return <EuiLoadingSpinner size="s" />;
+            }
             return <EuiText size="s">0</EuiText>;
           }
           const query = getWorkflowQueryPrefix(connector);
@@ -114,6 +119,6 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         ),
       },
     ],
-    [editConnector, actionTypeRegistry, canDelete, application]
+    [editConnector, actionTypeRegistry, canDelete, application, isConnectorResourcesPending]
   );
 };

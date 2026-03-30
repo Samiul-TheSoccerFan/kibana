@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { EuiConfirmModal, EuiText, useGeneratedHtmlId } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n-react';
 import type { ActionConnector } from '@kbn/alerts-ui-shared';
@@ -20,6 +20,8 @@ import {
   useDeleteConnector,
   useBulkDeleteConnectors,
 } from '../hooks/connectors/use_delete_connectors';
+
+const RESOURCE_POLLING_TIMEOUT_MS = 10000;
 
 const toActionConnector = (c: ConnectorItem): ActionConnector =>
   ({
@@ -40,6 +42,7 @@ export interface ConnectorsActionsContextType {
   editConnector: (connector: ConnectorItem) => void;
   deleteConnector: (connector: ConnectorItem) => void;
   bulkDeleteConnectors: (connectors: ConnectorItem[]) => void;
+  isConnectorResourcesPending: (connectorId: string) => boolean;
 }
 
 const ConnectorsActionsContext = createContext<ConnectorsActionsContextType | undefined>(undefined);
@@ -97,6 +100,28 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
   const createFlyoutState = useFlyoutState();
   const [editingConnector, setEditingConnector] = useState<ActionConnector | null>(null);
 
+  // Track connectors whose lifecycle resources (workflows/tools) are still being created.
+  // Every connector is expected to have tools — null counts from the backend mean the
+  // lifecycle handler hasn't finished. We poll via refetchInterval on useListConnectors
+  // until counts become non-null, or clear pending after a timeout.
+  const [pendingConnectorIds, setPendingConnectorIds] = useState<Set<string>>(new Set());
+
+  const isConnectorResourcesPending = useCallback(
+    (connectorId: string) => pendingConnectorIds.has(connectorId),
+    [pendingConnectorIds]
+  );
+
+  // Timeout: clear pending set after RESOURCE_POLLING_TIMEOUT_MS so spinners resolve to 0
+  useEffect(() => {
+    if (pendingConnectorIds.size === 0) {
+      return;
+    }
+    const timeout = setTimeout(() => {
+      setPendingConnectorIds(new Set());
+    }, RESOURCE_POLLING_TIMEOUT_MS);
+    return () => clearTimeout(timeout);
+  }, [pendingConnectorIds]);
+
   // Delete hooks
   const {
     isOpen: isDeleteModalOpen,
@@ -122,10 +147,14 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
   }, [queryClient]);
 
   // Create flyout
-  const handleConnectorCreated = useCallback(() => {
-    invalidateConnectors();
-    createFlyoutState.closeFlyout();
-  }, [invalidateConnectors, createFlyoutState]);
+  const handleConnectorCreated = useCallback(
+    (connector: ActionConnector) => {
+      setPendingConnectorIds((prev) => new Set(prev).add(connector.id));
+      invalidateConnectors();
+      createFlyoutState.closeFlyout();
+    },
+    [invalidateConnectors, createFlyoutState]
+  );
 
   const createFlyout = useMemo(
     () =>
@@ -168,6 +197,7 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
         editConnector,
         deleteConnector,
         bulkDeleteConnectors,
+        isConnectorResourcesPending,
       }}
     >
       {children}
@@ -189,8 +219,8 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
         >
           <EuiText>
             <DeleteConnectorModalBody
-              workflowsCount={deleteConnectorTarget.workflowsCount}
-              toolsCount={deleteConnectorTarget.toolsCount}
+              workflowsCount={deleteConnectorTarget.workflowsCount ?? 0}
+              toolsCount={deleteConnectorTarget.toolsCount ?? 0}
             />
           </EuiText>
         </EuiConfirmModal>
@@ -211,10 +241,13 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           <EuiText>
             <DeleteConnectorModalBody
               workflowsCount={bulkDeleteConnectorTargets.reduce(
-                (sum, c) => sum + c.workflowsCount,
+                (sum, c) => sum + (c.workflowsCount ?? 0),
                 0
               )}
-              toolsCount={bulkDeleteConnectorTargets.reduce((sum, c) => sum + c.toolsCount, 0)}
+              toolsCount={bulkDeleteConnectorTargets.reduce(
+                (sum, c) => sum + (c.toolsCount ?? 0),
+                0
+              )}
             />
           </EuiText>
         </EuiConfirmModal>
