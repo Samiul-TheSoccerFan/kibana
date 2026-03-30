@@ -218,6 +218,27 @@ export interface GetConnectorResponse {
   connector: ConnectorItem;
 }
 
+interface BulkDeleteConnectorResultBase {
+  connectorId: string;
+}
+
+interface BulkDeleteConnectorSuccessResult extends BulkDeleteConnectorResultBase {
+  success: true;
+}
+
+interface BulkDeleteConnectorFailureResult extends BulkDeleteConnectorResultBase {
+  success: false;
+  reason: SerializedAgentBuilderError;
+}
+
+export type BulkDeleteConnectorResult =
+  | BulkDeleteConnectorSuccessResult
+  | BulkDeleteConnectorFailureResult;
+
+export interface BulkDeleteConnectorsResponse {
+  results: BulkDeleteConnectorResult[];
+}
+
 export interface ListMcpToolsResponse {
   mcpTools: McpTool[];
 }

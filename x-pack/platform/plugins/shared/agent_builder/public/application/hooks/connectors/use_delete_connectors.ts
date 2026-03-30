@@ -8,9 +8,13 @@
 import type { UseMutationOptions } from '@kbn/react-query';
 import { useMutation, useQueryClient } from '@kbn/react-query';
 import { useCallback, useState } from 'react';
-import type { ConnectorItem } from '../../../../common/http_api/tools';
+import type {
+  ConnectorItem,
+  BulkDeleteConnectorsResponse,
+} from '../../../../common/http_api/tools';
 import { queryKeys } from '../../query_keys';
 import { labels } from '../../utils/i18n';
+import { useAgentBuilderServices } from '../use_agent_builder_service';
 import { useKibana } from '../use_kibana';
 import { useToasts } from '../use_toasts';
 
@@ -113,7 +117,7 @@ interface BulkDeleteConnectorsMutationVariables {
 }
 
 type BulkDeleteConnectorsMutationOptions = UseMutationOptions<
-  void,
+  BulkDeleteConnectorsResponse,
   Error,
   BulkDeleteConnectorsMutationVariables
 >;
@@ -132,21 +136,15 @@ export const useBulkDeleteConnectorsService = ({
   onSuccess?: BulkDeleteConnectorsSuccessCallback;
   onError?: BulkDeleteConnectorsErrorCallback;
 } = {}) => {
-  const {
-    services: { http },
-  } = useKibana();
+  const { toolsService } = useAgentBuilderServices();
   const queryClient = useQueryClient();
 
   const { mutate, mutateAsync, isLoading } = useMutation<
-    void,
+    BulkDeleteConnectorsResponse,
     Error,
     BulkDeleteConnectorsMutationVariables
   >({
-    mutationFn: async ({ connectorIds }) => {
-      await Promise.all(
-        connectorIds.map((id) => http.delete(`/api/actions/connector/${encodeURIComponent(id)}`))
-      );
-    },
+    mutationFn: ({ connectorIds }) => toolsService.bulkDeleteConnectors(connectorIds),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.connectors.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connectors.list() });
@@ -168,10 +166,26 @@ export const useBulkDeleteConnectors = () => {
     setConnectorsToDelete(connectors);
   }, []);
 
-  const handleSuccess: BulkDeleteConnectorsSuccessCallback = (_data, { connectorIds }) => {
-    addSuccessToast({
-      title: labels.connectors.bulkDeleteConnectorsSuccessToast(connectorIds.length),
-    });
+  const handleSuccess: BulkDeleteConnectorsSuccessCallback = ({ results }) => {
+    const succeeded = results.filter((r) => r.success);
+    const failed = results.filter((r) => !r.success);
+
+    if (failed.length === 0) {
+      addSuccessToast({
+        title: labels.connectors.bulkDeleteConnectorsSuccessToast(succeeded.length),
+      });
+    } else if (succeeded.length === 0) {
+      addErrorToast({
+        title: labels.connectors.bulkDeleteConnectorsErrorToast(failed.length),
+      });
+    } else {
+      addSuccessToast({
+        title: labels.connectors.bulkDeleteConnectorsSuccessToast(succeeded.length),
+      });
+      addErrorToast({
+        title: labels.connectors.bulkDeleteConnectorsErrorToast(failed.length),
+      });
+    }
     setConnectorsToDelete([]);
   };
 

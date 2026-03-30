@@ -34,6 +34,8 @@ import type {
   McpToolHealthState,
   McpToolHealthStatus,
   ValidateNamespaceResponse,
+  BulkDeleteConnectorResult,
+  BulkDeleteConnectorsResponse,
 } from '../../../common/http_api/tools';
 import { internalApiPath } from '../../../common/constants';
 import { AGENT_BUILDER_READ_SECURITY, TOOLS_WRITE_SECURITY } from '../route_security';
@@ -530,6 +532,44 @@ export function registerInternalToolsRoutes({
         body: {
           connector: toConnectorItem(connector),
         },
+      });
+    })
+  );
+
+  // bulk delete connectors (internal)
+  router.post(
+    {
+      path: `${internalApiPath}/connectors/_bulk_delete`,
+      validate: {
+        body: schema.object({
+          ids: schema.arrayOf(schema.string({ minLength: 1 }), { minSize: 1, maxSize: 100 }),
+        }),
+      },
+      options: { access: 'internal' },
+      security: TOOLS_WRITE_SECURITY,
+    },
+    wrapHandler(async (ctx, request, response) => {
+      const [, pluginsStart] = await coreSetup.getStartServices();
+      const actionsClient = await pluginsStart.actions.getActionsClientWithRequest(request);
+      const { ids } = request.body;
+
+      const deleteResults = await Promise.allSettled(ids.map((id) => actionsClient.delete({ id })));
+
+      const results: BulkDeleteConnectorResult[] = deleteResults.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return { connectorId: ids[index], success: true };
+        }
+        return {
+          connectorId: ids[index],
+          success: false,
+          reason: result.reason.toJSON?.() ?? {
+            error: { message: 'Unknown error' },
+          },
+        };
+      });
+
+      return response.ok<BulkDeleteConnectorsResponse>({
+        body: { results },
       });
     })
   );
