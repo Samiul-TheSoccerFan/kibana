@@ -78,18 +78,19 @@ export const ConnectorsTableHeader = ({
             min-height: 24px;
           `}
         >
-          <EuiText size="xs">
-            <FormattedMessage
-              id="xpack.agentBuilder.connectors.connectorsTableSummary"
-              defaultMessage="Showing {start}-{end} of {total} {connectors}"
-              values={{
-                start: <strong>{Math.min(pageIndex * pageSize + 1, connectors.length)}</strong>,
-                end: <strong>{Math.min((pageIndex + 1) * pageSize, connectors.length)}</strong>,
-                total,
-                connectors: <strong>{labels.connectors.connectorsLabel}</strong>,
-              }}
-            />
-          </EuiText>
+          {connectors.length > 0 && (
+            <EuiText size="xs">
+              <FormattedMessage
+                id="xpack.agentBuilder.connectors.connectorsTableSummary"
+                defaultMessage="Showing {start}-{end} of {total} {total, plural, one {Connector} other {Connectors}}"
+                values={{
+                  start: <strong>{pageIndex * pageSize + 1}</strong>,
+                  end: <strong>{Math.min((pageIndex + 1) * pageSize, connectors.length)}</strong>,
+                  total,
+                }}
+              />
+            </EuiText>
+          )}
           {selectedConnectors.length > 0 && (
             <EuiFlexGroup gutterSize="none">
               {canDelete && (
