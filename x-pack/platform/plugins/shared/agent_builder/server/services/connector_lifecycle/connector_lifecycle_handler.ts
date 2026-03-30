@@ -22,6 +22,7 @@ import type {
 import type { CoreStart } from '@kbn/core/server';
 import type { WorkflowsServerPluginSetup } from '@kbn/workflows-management-plugin/server';
 import type { SpacesPluginStart } from '@kbn/spaces-plugin/server';
+import { slugify } from '../../../common/utils/slugify';
 import type { ServiceManager } from '..';
 
 const TEMPLATE_DELIMITERS: OpeningAndClosingTags = ['<%=', '%>'];
@@ -41,15 +42,6 @@ function renderWorkflowTemplate(
   const parsed = parse(content);
   const shouldGenerateABTool = parsed?.tags?.includes('agent-builder-tool') ?? false;
   return { content, shouldGenerateABTool };
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 export function createConnectorLifecycleHandler(deps: ConnectorLifecycleHandlerDeps) {

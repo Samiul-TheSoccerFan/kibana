@@ -11,21 +11,13 @@ import { WORKFLOWS_APP_ID } from '@kbn/deeplinks-workflows';
 import { trimStart } from 'lodash';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
+import { slugify } from '../../../../../common/utils/slugify';
 import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
 import { ConnectorTypeIcon } from '../connector_type_icon';
 import { ConnectorContextMenu } from './connectors_table_context_menu';
 import { ConnectorQuickActions } from './connectors_table_quick_actions';
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function getWorkflowQueryPrefix(connector: ConnectorItem): string {
   const connectorTypeKey = trimStart(connector.actionTypeId, '.');
@@ -35,15 +27,12 @@ function getWorkflowQueryPrefix(connector: ConnectorItem): string {
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
   const { editConnector, isConnectorResourcesPending } = useConnectorsActions();
   const {
-    services: { application },
-  } = useKibana();
-  const canDelete = application.capabilities.actions?.delete === true;
-  const {
     services: {
+      application,
       plugins: { triggersActionsUi },
     },
   } = useKibana();
-
+  const canDelete = application.capabilities.actions?.delete === true;
   const { actionTypeRegistry } = triggersActionsUi;
 
   return useMemo(

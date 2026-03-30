@@ -954,6 +954,11 @@ export const labels = {
         defaultMessage: 'Delete {count, plural, one {# connector} other {# connectors}}?',
         values: { count },
       }),
+    bulkDeleteConnectorsConfirmButton: (count: number) =>
+      i18n.translate('xpack.agentBuilder.connectors.bulkDeleteConnectorsConfirmButton', {
+        defaultMessage: 'Delete {count, plural, one {# connector} other {# connectors}}',
+        values: { count },
+      }),
     bulkDeleteConnectorsConfirmationText: i18n.translate(
       'xpack.agentBuilder.connectors.bulkDeleteConnectorsConfirmationText',
       {

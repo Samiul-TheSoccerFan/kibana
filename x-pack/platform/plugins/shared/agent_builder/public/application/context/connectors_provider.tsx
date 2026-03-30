@@ -235,7 +235,9 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           onConfirm={confirmBulkDeleteConnectors}
           isLoading={isBulkDeletingConnectors}
           cancelButtonText={labels.connectors.deleteConnectorCancelButton}
-          confirmButtonText={labels.connectors.deleteConnectorConfirmButton}
+          confirmButtonText={labels.connectors.bulkDeleteConnectorsConfirmButton(
+            bulkDeleteConnectorTargets.length
+          )}
           buttonColor="danger"
         >
           <EuiText>
