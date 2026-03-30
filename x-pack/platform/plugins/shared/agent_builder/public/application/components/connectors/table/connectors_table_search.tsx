@@ -5,16 +5,66 @@
  * 2.0.
  */
 
-import type { Search } from '@elastic/eui';
+import type { EuiSearchBarOnChangeArgs, EuiSearchBarProps, Search } from '@elastic/eui';
+import { EuiSearchBar } from '@elastic/eui';
 import { countBy } from 'lodash';
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
 import { FilterOptionWithMatchesBadge } from '../../common/filter_option_with_matches_badge';
 
-export const useConnectorsTableSearch = (): Search => {
-  const { connectors } = useListConnectors({});
+const getConnectorsTableSearchConfig = ({
+  matchesByType,
+  actionTypeRegistry,
+}: {
+  matchesByType: Record<string, number>;
+  actionTypeRegistry: {
+    has: (id: string) => boolean;
+    get: (id: string) => { actionTypeTitle?: string };
+  };
+}): EuiSearchBarProps => ({
+  box: {
+    incremental: true,
+    placeholder: labels.connectors.searchConnectorsPlaceholder,
+    'data-test-subj': 'agentBuilderConnectorsSearchInput',
+  },
+  filters: [
+    {
+      type: 'field_value_selection',
+      field: 'actionTypeId',
+      name: labels.connectors.typeFilter,
+      multiSelect: 'or',
+      options: Object.keys(matchesByType).map((actionTypeId) => {
+        const typeName = actionTypeRegistry.has(actionTypeId)
+          ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
+          : actionTypeId;
+        return {
+          value: actionTypeId,
+          name: typeName,
+          view: (
+            <FilterOptionWithMatchesBadge
+              name={typeName}
+              matches={matchesByType[actionTypeId] ?? 0}
+            />
+          ),
+        };
+      }),
+      autoSortOptions: false,
+      searchThreshold: 1,
+    },
+  ],
+});
+
+export interface ConnectorsTableSearch {
+  searchConfig: Search;
+  results: ConnectorItem[];
+}
+
+export const useConnectorsTableSearch = (): ConnectorsTableSearch => {
+  const { connectors: readonlyConnectors } = useListConnectors({});
+  const connectors = useMemo(() => [...readonlyConnectors], [readonlyConnectors]);
   const {
     services: {
       plugins: { triggersActionsUi },
@@ -22,44 +72,43 @@ export const useConnectorsTableSearch = (): Search => {
   } = useKibana();
   const { actionTypeRegistry } = triggersActionsUi;
 
-  const typeOptions = useMemo(() => {
-    const matchesByType = countBy(connectors, (c) => c.actionTypeId);
-    return Object.keys(matchesByType).map((actionTypeId) => {
-      const typeName = actionTypeRegistry.has(actionTypeId)
-        ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
-        : actionTypeId;
-      return {
-        value: actionTypeId,
-        name: typeName,
-        view: (
-          <FilterOptionWithMatchesBadge
-            name={typeName}
-            matches={matchesByType[actionTypeId] ?? 0}
-          />
-        ),
-      };
-    });
-  }, [connectors, actionTypeRegistry]);
+  const [results, setResults] = useState<ConnectorItem[]>(connectors);
 
-  return useMemo(
-    () => ({
-      box: {
-        incremental: true,
-        placeholder: labels.connectors.searchConnectorsPlaceholder,
-        'data-test-subj': 'agentBuilderConnectorsSearchInput',
-      },
-      filters: [
-        {
-          type: 'field_value_selection',
-          field: 'actionTypeId',
-          name: labels.connectors.typeFilter,
-          multiSelect: 'or',
-          options: typeOptions,
-          autoSortOptions: false,
-          searchThreshold: 1,
-        },
-      ],
-    }),
-    [typeOptions]
+  useEffect(() => {
+    setResults(connectors);
+  }, [connectors]);
+
+  const handleChange = useCallback(
+    ({ query, error: searchError }: EuiSearchBarOnChangeArgs) => {
+      if (searchError) {
+        return;
+      }
+
+      const newItems = query
+        ? EuiSearchBar.Query.execute(query, connectors, {
+            defaultFields: ['name', 'actionTypeId'],
+          })
+        : connectors;
+
+      setResults(newItems);
+    },
+    [connectors]
   );
+
+  const matchesByType = useMemo(() => {
+    return countBy(connectors, (c) => c.actionTypeId);
+  }, [connectors]);
+
+  const searchConfig: Search = useMemo(
+    () => ({
+      ...getConnectorsTableSearchConfig({ matchesByType, actionTypeRegistry }),
+      onChange: handleChange,
+    }),
+    [handleChange, matchesByType, actionTypeRegistry]
+  );
+
+  return {
+    searchConfig,
+    results,
+  };
 };

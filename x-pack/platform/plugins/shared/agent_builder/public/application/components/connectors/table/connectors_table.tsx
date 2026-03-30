@@ -7,7 +7,7 @@
 
 import type { CriteriaWithPagination } from '@elastic/eui';
 import { EuiInMemoryTable, EuiSkeletonText, EuiText } from '@elastic/eui';
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import type { ConnectorItem, ListConnectorsResponse } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
@@ -39,7 +39,11 @@ export const AgentBuilderConnectorsTable = memo(() => {
   const [tablePageSize, setTablePageSize] = useState(10);
   const [selectedConnectors, setSelectedConnectors] = useState<ConnectorItem[]>([]);
   const columns = useConnectorsTableColumns();
-  const searchConfig = useConnectorsTableSearch();
+  const { searchConfig, results: tableConnectors } = useConnectorsTableSearch();
+
+  useEffect(() => {
+    setTablePageIndex(0);
+  }, [tableConnectors]);
 
   return (
     <EuiInMemoryTable
@@ -59,7 +63,7 @@ export const AgentBuilderConnectorsTable = memo(() => {
           isLoading={isLoading}
           pageIndex={tablePageIndex}
           pageSize={tablePageSize}
-          connectors={connectors as ConnectorItem[]}
+          connectors={tableConnectors}
           total={connectors.length}
           selectedConnectors={selectedConnectors}
           setSelectedConnectors={setSelectedConnectors}
@@ -67,7 +71,7 @@ export const AgentBuilderConnectorsTable = memo(() => {
       }
       loading={isLoading}
       columns={columns}
-      items={connectors as ConnectorItem[]}
+      items={tableConnectors}
       itemId="id"
       error={error ? labels.connectors.listConnectorsErrorMessage : undefined}
       search={searchConfig}
@@ -101,7 +105,9 @@ export const AgentBuilderConnectorsTable = memo(() => {
           <EuiSkeletonText lines={1} />
         ) : (
           <EuiText component="p" size="s" textAlign="center" color="subdued">
-            {labels.connectors.noConnectorsMessage}
+            {connectors.length > 0 && tableConnectors.length === 0
+              ? labels.connectors.noConnectorsMatchMessage
+              : labels.connectors.noConnectorsMessage}
           </EuiText>
         )
       }
