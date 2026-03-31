@@ -23,7 +23,7 @@ import {
 
 const RESOURCE_POLLING_TIMEOUT_MS = 10000;
 
-const toActionConnector = (c: ConnectorItem): ActionConnector =>
+export const toActionConnector = (c: ConnectorItem): ActionConnector =>
   ({
     id: c.id,
     name: c.name,
@@ -34,6 +34,7 @@ const toActionConnector = (c: ConnectorItem): ActionConnector =>
     isConnectorTypeDeprecated: c.isConnectorTypeDeprecated,
     config: c.config,
     isMissingSecrets: c.isMissingSecrets ?? false,
+    authMode: c.authMode,
     secrets: {},
   } as ActionConnector);
 

@@ -904,6 +904,67 @@ export const labels = {
       }
     ),
 
+    // OAuth
+    authorizeButtonLabel: i18n.translate('xpack.agentBuilder.connectors.authorizeButtonLabel', {
+      defaultMessage: 'Authorize',
+    }),
+    cancelAuthorizationButtonLabel: i18n.translate(
+      'xpack.agentBuilder.connectors.cancelAuthorizationButtonLabel',
+      {
+        defaultMessage: 'Cancel authorization',
+      }
+    ),
+    disconnectButtonLabel: i18n.translate('xpack.agentBuilder.connectors.disconnectButtonLabel', {
+      defaultMessage: 'Disconnect',
+    }),
+    disconnectConfirmTitle: (name: string) =>
+      i18n.translate('xpack.agentBuilder.connectors.disconnectConfirmTitle', {
+        defaultMessage: 'Disconnect {name}?',
+        values: { name },
+      }),
+    disconnectConfirmButton: i18n.translate(
+      'xpack.agentBuilder.connectors.disconnectConfirmButton',
+      {
+        defaultMessage: 'Disconnect',
+      }
+    ),
+    disconnectCancelButton: i18n.translate('xpack.agentBuilder.connectors.disconnectCancelButton', {
+      defaultMessage: 'Cancel',
+    }),
+    oauthConnectSuccessTitle: i18n.translate(
+      'xpack.agentBuilder.connectors.oauthConnectSuccessTitle',
+      {
+        defaultMessage: 'Authorization successful',
+      }
+    ),
+    oauthConnectSuccessMessage: i18n.translate(
+      'xpack.agentBuilder.connectors.oauthConnectSuccessMessage',
+      {
+        defaultMessage: 'Your connector has been authorized successfully.',
+      }
+    ),
+    oauthConnectErrorTitle: i18n.translate('xpack.agentBuilder.connectors.oauthConnectErrorTitle', {
+      defaultMessage: 'Authorization failed',
+    }),
+    oauthDisconnectSuccessTitle: i18n.translate(
+      'xpack.agentBuilder.connectors.oauthDisconnectSuccessTitle',
+      {
+        defaultMessage: 'Disconnected',
+      }
+    ),
+    oauthDisconnectSuccessMessage: i18n.translate(
+      'xpack.agentBuilder.connectors.oauthDisconnectSuccessMessage',
+      {
+        defaultMessage: 'Your connector has been disconnected from OAuth.',
+      }
+    ),
+    oauthDisconnectErrorTitle: i18n.translate(
+      'xpack.agentBuilder.connectors.oauthDisconnectErrorTitle',
+      {
+        defaultMessage: 'Disconnect failed',
+      }
+    ),
+
     // Bulk actions
     deleteSelectedConnectorsButtonLabel: (count: number) =>
       i18n.translate('xpack.agentBuilder.connectors.deleteSelectedConnectorsButtonLabel', {

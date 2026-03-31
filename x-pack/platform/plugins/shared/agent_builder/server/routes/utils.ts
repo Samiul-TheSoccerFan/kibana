@@ -31,6 +31,7 @@ export const toConnectorItem = (
     isMissingSecrets: connector.isMissingSecrets,
     isConnectorTypeDeprecated: connector.isConnectorTypeDeprecated,
     config: connector.config,
+    authMode: connector.authMode,
     toolsCount: counts?.toolsCount || null,
     workflowsCount: counts?.workflowsCount || null,
   };
