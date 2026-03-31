@@ -170,6 +170,7 @@ export const ConnectorContextMenu = ({ connector }: ConnectorContextMenuProps) =
     <>
       <EuiPopover
         id={`${connector.id}_context-menu`}
+        aria-label={labels.connectors.connectorContextMenuButtonLabel}
         panelPaddingSize="s"
         button={
           <EuiButtonIcon
