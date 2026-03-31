@@ -88,7 +88,12 @@ export {
   AlertProvidedActionVariables,
   defaultAlertFormatterFormatters,
 } from '@kbn/alerts-ui-shared';
-export { templateActionVariable, updateActionConnector, executeAction } from './application/lib';
+export {
+  templateActionVariable,
+  updateActionConnector,
+  executeAction,
+  usesOAuthAuthorizationCode,
+} from './application/lib';
 
 export function plugin(context: PluginInitializerContext) {
   return new Plugin(context);
