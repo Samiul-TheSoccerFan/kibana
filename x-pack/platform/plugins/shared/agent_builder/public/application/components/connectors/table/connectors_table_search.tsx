@@ -6,9 +6,9 @@
  */
 
 import type { EuiSearchBarOnChangeArgs, EuiSearchBarProps, Search } from '@elastic/eui';
-import { EuiSearchBar } from '@elastic/eui';
+import { EuiSearchBar, type Query } from '@elastic/eui';
 import { countBy } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { useKibana } from '../../../hooks/use_kibana';
@@ -102,9 +102,16 @@ export const useConnectorsTableSearch = (): ConnectorsTableSearch => {
   const { actionTypeRegistry } = triggersActionsUi;
 
   const [results, setResults] = useState<ConnectorItem[]>(connectors);
+  const currentQueryRef = useRef<Query | null>(null);
 
+  // Re-apply the current search query when connectors update (e.g., from background polling)
   useEffect(() => {
-    setResults(connectors);
+    const filtered = currentQueryRef.current
+      ? EuiSearchBar.Query.execute(currentQueryRef.current, connectors, {
+          defaultFields: ['name', 'actionTypeId'],
+        })
+      : connectors;
+    setResults(filtered);
   }, [connectors]);
 
   const handleChange = useCallback(
@@ -112,6 +119,8 @@ export const useConnectorsTableSearch = (): ConnectorsTableSearch => {
       if (searchError) {
         return;
       }
+
+      currentQueryRef.current = query ?? null;
 
       const newItems = query
         ? EuiSearchBar.Query.execute(query, connectors, {
