@@ -118,5 +118,6 @@
     "@kbn/react-hooks",
     "@kbn/search-inference-endpoints",
     "@kbn/deeplinks-workflows",
+    "@kbn/response-ops-oauth-hooks",
   ]
 }
