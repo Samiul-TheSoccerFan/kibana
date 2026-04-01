@@ -847,6 +847,18 @@ export const labels = {
     workflowsColumn: i18n.translate('xpack.agentBuilder.connectors.column.workflows', {
       defaultMessage: 'Workflows',
     }),
+    statusColumn: i18n.translate('xpack.agentBuilder.connectors.column.status', {
+      defaultMessage: 'Status',
+    }),
+    statusAuthorized: i18n.translate('xpack.agentBuilder.connectors.status.authorized', {
+      defaultMessage: 'Authorized',
+    }),
+    statusDisconnected: i18n.translate('xpack.agentBuilder.connectors.status.disconnected', {
+      defaultMessage: 'Disconnected',
+    }),
+    statusFilter: i18n.translate('xpack.agentBuilder.connectors.statusFilter', {
+      defaultMessage: 'Status',
+    }),
     connectorsLabel: i18n.translate('xpack.agentBuilder.connectors.connectorsLabel', {
       defaultMessage: 'Connectors',
     }),
@@ -922,6 +934,12 @@ export const labels = {
         defaultMessage: 'Disconnect {name}?',
         values: { name },
       }),
+    disconnectConfirmMessage: i18n.translate(
+      'xpack.agentBuilder.connectors.disconnectConfirmMessage',
+      {
+        defaultMessage: 'You will need to re-authorize to use this connector again.',
+      }
+    ),
     disconnectConfirmButton: i18n.translate(
       'xpack.agentBuilder.connectors.disconnectConfirmButton',
       {

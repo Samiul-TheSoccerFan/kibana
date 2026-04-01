@@ -17,9 +17,11 @@ import { FilterOptionWithMatchesBadge } from '../../common/filter_option_with_ma
 
 const getConnectorsTableSearchConfig = ({
   matchesByType,
+  matchesByStatus,
   actionTypeRegistry,
 }: {
   matchesByType: Record<string, number>;
+  matchesByStatus: Record<string, number>;
   actionTypeRegistry: {
     has: (id: string) => boolean;
     get: (id: string) => { actionTypeTitle?: string };
@@ -54,6 +56,33 @@ const getConnectorsTableSearchConfig = ({
       autoSortOptions: false,
       searchThreshold: 1,
     },
+    ...(Object.keys(matchesByStatus).length > 0
+      ? [
+          {
+            type: 'field_value_selection' as const,
+            field: 'oauthStatus',
+            name: labels.connectors.statusFilter,
+            multiSelect: 'or' as const,
+            options: Object.keys(matchesByStatus).map((status) => {
+              const statusName =
+                status === 'authorized'
+                  ? labels.connectors.statusAuthorized
+                  : labels.connectors.statusDisconnected;
+              return {
+                value: status,
+                name: statusName,
+                view: (
+                  <FilterOptionWithMatchesBadge
+                    name={statusName}
+                    matches={matchesByStatus[status] ?? 0}
+                  />
+                ),
+              };
+            }),
+            autoSortOptions: false,
+          },
+        ]
+      : []),
   ],
 });
 
@@ -99,12 +128,19 @@ export const useConnectorsTableSearch = (): ConnectorsTableSearch => {
     return countBy(connectors, (c) => c.actionTypeId);
   }, [connectors]);
 
+  const matchesByStatus = useMemo(() => {
+    return countBy(
+      connectors.filter((c) => c.oauthStatus),
+      (c) => c.oauthStatus
+    );
+  }, [connectors]);
+
   const searchConfig: Search = useMemo(
     () => ({
-      ...getConnectorsTableSearchConfig({ matchesByType, actionTypeRegistry }),
+      ...getConnectorsTableSearchConfig({ matchesByType, matchesByStatus, actionTypeRegistry }),
       onChange: handleChange,
     }),
-    [handleChange, matchesByType, actionTypeRegistry]
+    [handleChange, matchesByType, matchesByStatus, actionTypeRegistry]
   );
 
   return {

@@ -189,6 +189,7 @@ export interface ConnectorItem {
   isMissingSecrets?: boolean;
   isConnectorTypeDeprecated: boolean;
   authMode?: 'shared' | 'per-user';
+  oauthStatus?: 'authorized' | 'disconnected';
   /**
    * Number of tools associated with this connector, or null if the lifecycle handler
    * has not yet finished creating resources. Every connector is expected to have tools —

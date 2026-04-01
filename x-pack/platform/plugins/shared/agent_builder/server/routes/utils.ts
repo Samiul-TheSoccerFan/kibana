@@ -19,7 +19,11 @@ export const AGENT_SOCKET_TIMEOUT_MS = 15 * 60 * 1000;
 
 export const toConnectorItem = (
   connector: Connector,
-  counts?: { toolsCount: number; workflowsCount: number }
+  options?: {
+    toolsCount?: number;
+    workflowsCount?: number;
+    oauthStatus?: 'authorized' | 'disconnected';
+  }
 ): ConnectorItem => {
   return {
     id: connector.id,
@@ -32,7 +36,8 @@ export const toConnectorItem = (
     isConnectorTypeDeprecated: connector.isConnectorTypeDeprecated,
     config: connector.config,
     authMode: connector.authMode,
-    toolsCount: counts?.toolsCount || null,
-    workflowsCount: counts?.workflowsCount || null,
+    toolsCount: options?.toolsCount || null,
+    workflowsCount: options?.workflowsCount || null,
+    oauthStatus: options?.oauthStatus,
   };
 };

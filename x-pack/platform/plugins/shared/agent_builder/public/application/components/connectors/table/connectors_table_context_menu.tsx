@@ -42,6 +42,7 @@ const OAuthMenuItems: React.FC<{
       notifications: { toasts },
     },
   } = useKibana();
+  const { invalidateConnectors } = useConnectorsActions();
 
   const { connect, cancelConnect, isConnecting, isAwaitingCallback } = useConnectorOAuthConnect({
     connectorId: connector.id,
@@ -51,6 +52,7 @@ const OAuthMenuItems: React.FC<{
         title: labels.connectors.oauthConnectSuccessTitle,
         text: labels.connectors.oauthConnectSuccessMessage,
       });
+      invalidateConnectors();
     },
     onError: (error) => {
       toasts.addDanger({
@@ -120,6 +122,7 @@ const DisconnectConfirmModal: React.FC<{
       notifications: { toasts },
     },
   } = useKibana();
+  const { invalidateConnectors } = useConnectorsActions();
   const disconnectModalTitleId = useGeneratedHtmlId({ prefix: 'disconnectConnectorTitle' });
 
   const { disconnect, isDisconnecting } = useConnectorOAuthDisconnect({
@@ -129,6 +132,7 @@ const DisconnectConfirmModal: React.FC<{
         title: labels.connectors.oauthDisconnectSuccessTitle,
         text: labels.connectors.oauthDisconnectSuccessMessage,
       });
+      invalidateConnectors();
       onCancel();
     },
     onError: (error) => {
@@ -151,7 +155,9 @@ const DisconnectConfirmModal: React.FC<{
       confirmButtonText={labels.connectors.disconnectConfirmButton}
       buttonColor="danger"
       isLoading={isDisconnecting}
-    />
+    >
+      {labels.connectors.disconnectConfirmMessage}
+    </EuiConfirmModal>
   );
 };
 

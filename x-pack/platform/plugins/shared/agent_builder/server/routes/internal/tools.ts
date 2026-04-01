@@ -42,6 +42,9 @@ import { AGENT_BUILDER_READ_SECURITY, TOOLS_WRITE_SECURITY } from '../route_secu
 import { getToolTypeInfo, bulkCreateMcpTools } from '../../services/tools/utils';
 import { toConnectorItem } from '../utils';
 
+const USER_CONNECTOR_TOKEN_TYPE = 'user_connector_token';
+const PER_USER_AUTH_MODE = 'per-user';
+
 export function registerInternalToolsRoutes({
   router,
   coreSetup,
@@ -456,7 +459,7 @@ export function registerInternalToolsRoutes({
       security: AGENT_BUILDER_READ_SECURITY,
     },
     wrapHandler(async (ctx, request, response) => {
-      const [, pluginsStart] = await coreSetup.getStartServices();
+      const [coreStart, pluginsStart] = await coreSetup.getStartServices();
       const { tools: toolService } = getInternalServices();
       const actionsClient = await pluginsStart.actions.getActionsClientWithRequest(request);
       const [allConnectors, compatibleTypes, allTools] = await Promise.all([
@@ -490,16 +493,53 @@ export function registerInternalToolsRoutes({
         }
       }
 
-      const connectors: ConnectorItem[] = allConnectors
+      // Check OAuth authorization status for per-user connectors.
+      // Batch query user_connector_token saved objects to determine which
+      // OAuth connectors the current user has authorized.
+      const filteredConnectors = allConnectors
         .filter((connector) => compatibleTypeIds.has(connector.actionTypeId))
-        .filter((connector) => (type ? connector.actionTypeId === type : true))
-        .map((connector) => {
-          const counts = connectorCounts.get(connector.id);
-          return toConnectorItem(connector, {
-            toolsCount: counts?.toolsCount ?? 0,
-            workflowsCount: counts?.workflowsCount ?? 0,
+        .filter((connector) => (type ? connector.actionTypeId === type : true));
+
+      const oauthConnectorIds = filteredConnectors
+        .filter((connector) => connector.authMode === PER_USER_AUTH_MODE)
+        .map((connector) => connector.id);
+
+      const authorizedConnectorIds = new Set<string>();
+      if (oauthConnectorIds.length > 0) {
+        const currentUser = coreStart.security.authc.getCurrentUser(request);
+        if (currentUser?.profile_uid) {
+          const soClient = coreStart.savedObjects.getScopedClient(request, {
+            includedHiddenTypes: [USER_CONNECTOR_TOKEN_TYPE],
           });
+          const connectorIdFilter = oauthConnectorIds
+            .map((id) => `${USER_CONNECTOR_TOKEN_TYPE}.attributes.connectorId: "${id}"`)
+            .join(' OR ');
+          const tokenResults = await soClient.find<{ connectorId: string }>({
+            type: USER_CONNECTOR_TOKEN_TYPE,
+            perPage: oauthConnectorIds.length,
+            filter: `${USER_CONNECTOR_TOKEN_TYPE}.attributes.profileUid: "${currentUser.profile_uid}" AND (${connectorIdFilter})`,
+          });
+          for (const token of tokenResults.saved_objects) {
+            if (token.attributes.connectorId) {
+              authorizedConnectorIds.add(token.attributes.connectorId);
+            }
+          }
+        }
+      }
+
+      const connectors: ConnectorItem[] = filteredConnectors.map((connector) => {
+        const counts = connectorCounts.get(connector.id);
+        const isOAuth = connector.authMode === PER_USER_AUTH_MODE;
+        return toConnectorItem(connector, {
+          toolsCount: counts?.toolsCount ?? 0,
+          workflowsCount: counts?.workflowsCount ?? 0,
+          oauthStatus: isOAuth
+            ? authorizedConnectorIds.has(connector.id)
+              ? 'authorized'
+              : 'disconnected'
+            : undefined,
         });
+      });
 
       return response.ok<ListConnectorsResponse>({
         body: {

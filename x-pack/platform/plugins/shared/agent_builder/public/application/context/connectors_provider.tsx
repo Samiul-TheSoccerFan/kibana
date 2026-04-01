@@ -43,6 +43,7 @@ export interface ConnectorsActionsContextType {
   editConnector: (connector: ConnectorItem) => void;
   deleteConnector: (connector: ConnectorItem) => void;
   bulkDeleteConnectors: (connectors: ConnectorItem[]) => void;
+  invalidateConnectors: () => void;
   isConnectorResourcesPending: (connectorId: string) => boolean;
 }
 
@@ -198,6 +199,7 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
         editConnector,
         deleteConnector,
         bulkDeleteConnectors,
+        invalidateConnectors,
         isConnectorResourcesPending,
       }}
     >

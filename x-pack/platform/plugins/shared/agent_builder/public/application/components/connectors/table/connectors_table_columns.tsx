@@ -53,6 +53,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'actionTypeId',
         name: labels.connectors.typeColumn,
+        width: '15%',
         render: (actionTypeId: string) => {
           const typeName = actionTypeRegistry.has(actionTypeId)
             ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
@@ -73,6 +74,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'workflowsCount',
         name: labels.connectors.workflowsColumn,
+        width: '15%',
         align: 'center',
         render: (workflowsCount: number | null, connector: ConnectorItem) => {
           // null + pending = lifecycle handler still running, show spinner
@@ -94,6 +96,21 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
             >
               <EuiText size="s">{workflowsCount}</EuiText>
             </EuiLink>
+          );
+        },
+      },
+      {
+        field: 'oauthStatus',
+        name: labels.connectors.statusColumn,
+        width: '15%',
+        render: (oauthStatus: ConnectorItem['oauthStatus']) => {
+          if (!oauthStatus) return null;
+          return (
+            <EuiText size="s" color={oauthStatus === 'authorized' ? 'success' : 'subdued'}>
+              {oauthStatus === 'authorized'
+                ? labels.connectors.statusAuthorized
+                : labels.connectors.statusDisconnected}
+            </EuiText>
           );
         },
       },
