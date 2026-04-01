@@ -530,9 +530,12 @@ export function registerInternalToolsRoutes({
       const connectors: ConnectorItem[] = filteredConnectors.map((connector) => {
         const counts = connectorCounts.get(connector.id);
         const isOAuth = connector.authMode === PER_USER_AUTH_MODE;
+        // Every connector is expected to have tools. null means the lifecycle handler
+        // hasn't finished creating resources yet. The frontend shows a spinner for null
+        // and the actual count for numbers.
         return toConnectorItem(connector, {
-          toolsCount: counts?.toolsCount ?? 0,
-          workflowsCount: counts?.workflowsCount ?? 0,
+          toolsCount: counts?.toolsCount || null,
+          workflowsCount: counts?.workflowsCount || null,
           oauthStatus: isOAuth
             ? authorizedConnectorIds.has(connector.id)
               ? 'authorized'
