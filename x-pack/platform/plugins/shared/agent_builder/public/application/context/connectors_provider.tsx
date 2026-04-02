@@ -5,9 +5,8 @@
  * 2.0.
  */
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { EuiConfirmModal, EuiText, useGeneratedHtmlId } from '@elastic/eui';
-import { FormattedMessage } from '@kbn/i18n-react';
 import type { ActionConnector } from '@kbn/alerts-ui-shared';
 import { AgentBuilderConnectorFeatureId } from '@kbn/actions-plugin/common';
 import { useQueryClient } from '@kbn/react-query';
@@ -20,8 +19,6 @@ import {
   useDeleteConnector,
   useBulkDeleteConnectors,
 } from '../hooks/connectors/use_delete_connectors';
-
-const RESOURCE_POLLING_TIMEOUT_MS = 10000;
 
 export const toActionConnector = (c: ConnectorItem): ActionConnector =>
   ({
@@ -44,51 +41,9 @@ export interface ConnectorsActionsContextType {
   deleteConnector: (connector: ConnectorItem) => void;
   bulkDeleteConnectors: (connectors: ConnectorItem[]) => void;
   invalidateConnectors: () => void;
-  isConnectorResourcesPending: (connectorId: string) => boolean;
 }
 
 const ConnectorsActionsContext = createContext<ConnectorsActionsContextType | undefined>(undefined);
-
-const DeleteConnectorModalBody = ({
-  workflowsCount,
-  toolsCount,
-}: {
-  workflowsCount: number;
-  toolsCount: number;
-}) => {
-  if (workflowsCount > 0 || toolsCount > 0) {
-    return (
-      <p>
-        <FormattedMessage
-          id="xpack.agentBuilder.connectors.deleteConnectorConfirmationTextWithResources"
-          defaultMessage="This will also delete {workflows} and {tools}. This action cannot be undone."
-          values={{
-            workflows: (
-              <strong>
-                <FormattedMessage
-                  id="xpack.agentBuilder.connectors.deleteConnectorWorkflowCount"
-                  defaultMessage="{count, plural, one {# workflow} other {# workflows}}"
-                  values={{ count: workflowsCount }}
-                />
-              </strong>
-            ),
-            tools: (
-              <strong>
-                <FormattedMessage
-                  id="xpack.agentBuilder.connectors.deleteConnectorToolCount"
-                  defaultMessage="{count, plural, one {# tool} other {# tools}}"
-                  values={{ count: toolsCount }}
-                />
-              </strong>
-            ),
-          }}
-        />
-      </p>
-    );
-  }
-
-  return <p>{labels.connectors.deleteConnectorConfirmationText}</p>;
-};
 
 export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) => {
   const {
@@ -101,28 +56,6 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
   // Flyout state
   const createFlyoutState = useFlyoutState();
   const [editingConnector, setEditingConnector] = useState<ActionConnector | null>(null);
-
-  // Track connectors whose lifecycle resources (workflows/tools) are still being created.
-  // Every connector is expected to have tools — null counts from the backend mean the
-  // lifecycle handler hasn't finished. We poll via refetchInterval on useListConnectors
-  // until counts become non-null, or clear pending after a timeout.
-  const [pendingConnectorIds, setPendingConnectorIds] = useState<Set<string>>(new Set());
-
-  const isConnectorResourcesPending = useCallback(
-    (connectorId: string) => pendingConnectorIds.has(connectorId),
-    [pendingConnectorIds]
-  );
-
-  // Timeout: clear pending set after RESOURCE_POLLING_TIMEOUT_MS so spinners resolve to 0
-  useEffect(() => {
-    if (pendingConnectorIds.size === 0) {
-      return;
-    }
-    const timeout = setTimeout(() => {
-      setPendingConnectorIds(new Set());
-    }, RESOURCE_POLLING_TIMEOUT_MS);
-    return () => clearTimeout(timeout);
-  }, [pendingConnectorIds]);
 
   // Delete hooks
   const {
@@ -149,14 +82,10 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
   }, [queryClient]);
 
   // Create flyout
-  const handleConnectorCreated = useCallback(
-    (connector: ActionConnector) => {
-      setPendingConnectorIds((prev) => new Set(prev).add(connector.id));
-      invalidateConnectors();
-      createFlyoutState.closeFlyout();
-    },
-    [invalidateConnectors, createFlyoutState]
-  );
+  const handleConnectorCreated = useCallback(() => {
+    invalidateConnectors();
+    createFlyoutState.closeFlyout();
+  }, [invalidateConnectors, createFlyoutState]);
 
   const createFlyout = useMemo(
     () =>
@@ -200,7 +129,6 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
         deleteConnector,
         bulkDeleteConnectors,
         invalidateConnectors,
-        isConnectorResourcesPending,
       }}
     >
       {children}
@@ -220,12 +148,7 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           confirmButtonText={labels.connectors.deleteConnectorConfirmButton}
           buttonColor="danger"
         >
-          <EuiText>
-            <DeleteConnectorModalBody
-              workflowsCount={deleteConnectorTarget.workflowsCount ?? 0}
-              toolsCount={deleteConnectorTarget.toolsCount ?? 0}
-            />
-          </EuiText>
+          <EuiText>{labels.connectors.deleteConnectorConfirmationText}</EuiText>
         </EuiConfirmModal>
       )}
 
@@ -243,18 +166,7 @@ export const ConnectorsProvider = ({ children }: { children: React.ReactNode }) 
           )}
           buttonColor="danger"
         >
-          <EuiText>
-            <DeleteConnectorModalBody
-              workflowsCount={bulkDeleteConnectorTargets.reduce(
-                (sum, c) => sum + (c.workflowsCount ?? 0),
-                0
-              )}
-              toolsCount={bulkDeleteConnectorTargets.reduce(
-                (sum, c) => sum + (c.toolsCount ?? 0),
-                0
-              )}
-            />
-          </EuiText>
+          <EuiText>{labels.connectors.bulkDeleteConnectorsConfirmationText}</EuiText>
         </EuiConfirmModal>
       )}
     </ConnectorsActionsContext.Provider>

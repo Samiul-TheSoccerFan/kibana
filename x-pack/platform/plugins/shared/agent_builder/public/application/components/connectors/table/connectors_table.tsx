@@ -7,9 +7,8 @@
 
 import type { CriteriaWithPagination } from '@elastic/eui';
 import { EuiInMemoryTable, EuiSkeletonText, EuiText } from '@elastic/eui';
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import type { ConnectorItem, ListConnectorsResponse } from '../../../../../common/http_api/tools';
-import { useConnectorsActions } from '../../../context/connectors_provider';
+import React, { memo, useEffect, useState } from 'react';
+import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { labels } from '../../../utils/i18n';
 import { useConnectorsTableColumns } from './connectors_table_columns';
@@ -17,24 +16,8 @@ import { ConnectorsTableHeader } from './connectors_table_header';
 import { connectorQuickActionsHoverStyles } from './connectors_table_quick_actions';
 import { useConnectorsTableSearch } from './connectors_table_search';
 
-const RESOURCE_POLL_INTERVAL_MS = 3000;
-
 export const AgentBuilderConnectorsTable = memo(() => {
-  const { isConnectorResourcesPending } = useConnectorsActions();
-
-  // Poll while any pending connector still has null toolsCount (lifecycle handler running).
-  const refetchInterval = useCallback(
-    (data: ListConnectorsResponse | undefined) => {
-      if (!data) return false;
-      const hasPendingNullCounts = data.connectors.some(
-        (c) => c.toolsCount === null && isConnectorResourcesPending(c.id)
-      );
-      return hasPendingNullCounts ? RESOURCE_POLL_INTERVAL_MS : false;
-    },
-    [isConnectorResourcesPending]
-  );
-
-  const { connectors, isLoading, error } = useListConnectors({ refetchInterval });
+  const { connectors, isLoading, error } = useListConnectors({});
   const [tablePageIndex, setTablePageIndex] = useState(0);
   const [tablePageSize, setTablePageSize] = useState(10);
   const [selectedConnectors, setSelectedConnectors] = useState<ConnectorItem[]>([]);

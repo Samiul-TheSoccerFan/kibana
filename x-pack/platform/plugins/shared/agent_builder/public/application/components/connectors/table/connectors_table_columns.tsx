@@ -6,12 +6,9 @@
  */
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
-import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiLoadingSpinner, EuiText } from '@elastic/eui';
-import { WORKFLOWS_APP_ID } from '@kbn/deeplinks-workflows';
-import { trimStart } from 'lodash';
+import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
-import { slugify } from '../../../../../common/utils/slugify';
 import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
@@ -19,13 +16,8 @@ import { ConnectorTypeIcon } from '../connector_type_icon';
 import { ConnectorContextMenu } from './connectors_table_context_menu';
 import { ConnectorQuickActions } from './connectors_table_quick_actions';
 
-function getWorkflowQueryPrefix(connector: ConnectorItem): string {
-  const connectorTypeKey = trimStart(connector.actionTypeId, '.');
-  return `${connectorTypeKey}.${slugify(connector.name)}`;
-}
-
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
-  const { editConnector, isConnectorResourcesPending } = useConnectorsActions();
+  const { editConnector } = useConnectorsActions();
   const {
     services: {
       application,
@@ -72,34 +64,6 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         },
       },
       {
-        field: 'workflowsCount',
-        name: labels.connectors.workflowsColumn,
-        width: '15%',
-        align: 'center',
-        render: (workflowsCount: number | null, connector: ConnectorItem) => {
-          // null + pending = lifecycle handler still running, show spinner
-          // null + not pending = timeout occurred, show 0
-          if (workflowsCount === null) {
-            if (isConnectorResourcesPending(connector.id)) {
-              return <EuiLoadingSpinner size="s" />;
-            }
-            return <EuiText size="s">0</EuiText>;
-          }
-          const query = getWorkflowQueryPrefix(connector);
-          const workflowsUrl = application.getUrlForApp(WORKFLOWS_APP_ID, {
-            path: `?query=${encodeURIComponent(query)}`,
-          });
-          return (
-            <EuiLink
-              href={workflowsUrl}
-              data-test-subj={`agentBuilderConnectorsWorkflowsLink-${connector.id}`}
-            >
-              <EuiText size="s">{workflowsCount}</EuiText>
-            </EuiLink>
-          );
-        },
-      },
-      {
         field: 'oauthStatus',
         name: labels.connectors.statusColumn,
         width: '15%',
@@ -125,6 +89,6 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         ),
       },
     ],
-    [editConnector, actionTypeRegistry, canDelete, application, isConnectorResourcesPending]
+    [editConnector, actionTypeRegistry, canDelete]
   );
 };

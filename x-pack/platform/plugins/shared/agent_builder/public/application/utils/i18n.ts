@@ -844,9 +844,6 @@ export const labels = {
     typeColumn: i18n.translate('xpack.agentBuilder.connectors.column.type', {
       defaultMessage: 'Type',
     }),
-    workflowsColumn: i18n.translate('xpack.agentBuilder.connectors.column.workflows', {
-      defaultMessage: 'Workflows',
-    }),
     statusColumn: i18n.translate('xpack.agentBuilder.connectors.column.status', {
       defaultMessage: 'Status',
     }),

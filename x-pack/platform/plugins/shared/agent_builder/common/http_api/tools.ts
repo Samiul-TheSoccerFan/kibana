@@ -190,17 +190,6 @@ export interface ConnectorItem {
   isConnectorTypeDeprecated: boolean;
   authMode?: 'shared' | 'per-user';
   oauthStatus?: 'authorized' | 'disconnected';
-  /**
-   * Number of tools associated with this connector, or null if the lifecycle handler
-   * has not yet finished creating resources. Every connector is expected to have tools —
-   * null means creation is still in progress.
-   */
-  toolsCount: number | null;
-  /**
-   * Number of workflows associated with this connector, or null if the lifecycle handler
-   * has not yet finished creating resources.
-   */
-  workflowsCount: number | null;
 }
 
 export interface McpConnectorItem extends ConnectorItem {

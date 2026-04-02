@@ -460,46 +460,22 @@ export function registerInternalToolsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart, pluginsStart] = await coreSetup.getStartServices();
-      const { tools: toolService } = getInternalServices();
       const actionsClient = await pluginsStart.actions.getActionsClientWithRequest(request);
-      const [allConnectors, compatibleTypes, allTools] = await Promise.all([
+      const [allConnectors, compatibleTypes] = await Promise.all([
         actionsClient.getAll(),
         actionsClient.listTypes({ featureId: AgentBuilderConnectorFeatureId }),
-        toolService.getRegistry({ request }).then((registry) => registry.list({})),
       ]);
 
       const compatibleTypeIds = new Set(compatibleTypes.map((t) => t.id));
       const { type } = request.query;
 
-      // Build connector → tools/workflows counts from tool tags
-      const connectorCounts = new Map<string, { toolsCount: number; workflowsCount: number }>();
-      for (const tool of allTools) {
-        if (!tool.tags) continue;
-        for (const tag of tool.tags) {
-          if (tag.startsWith('connector:')) {
-            const connectorId = tag.slice('connector:'.length);
-            let counts = connectorCounts.get(connectorId);
-            if (!counts) {
-              counts = { toolsCount: 0, workflowsCount: 0 };
-              connectorCounts.set(connectorId, counts);
-            }
-            counts.toolsCount++;
-            const workflowId = (tool.configuration as Record<string, unknown>)
-              ?.workflow_id as string;
-            if (workflowId) {
-              counts.workflowsCount++;
-            }
-          }
-        }
-      }
-
-      // Check OAuth authorization status for per-user connectors.
-      // Batch query user_connector_token saved objects to determine which
-      // OAuth connectors the current user has authorized.
       const filteredConnectors = allConnectors
         .filter((connector) => compatibleTypeIds.has(connector.actionTypeId))
         .filter((connector) => (type ? connector.actionTypeId === type : true));
 
+      // Check OAuth authorization status for per-user connectors.
+      // Batch query user_connector_token saved objects to determine which
+      // OAuth connectors the current user has authorized.
       const oauthConnectorIds = filteredConnectors
         .filter((connector) => connector.authMode === PER_USER_AUTH_MODE)
         .map((connector) => connector.id);
@@ -528,14 +504,8 @@ export function registerInternalToolsRoutes({
       }
 
       const connectors: ConnectorItem[] = filteredConnectors.map((connector) => {
-        const counts = connectorCounts.get(connector.id);
         const isOAuth = connector.authMode === PER_USER_AUTH_MODE;
-        // Every connector is expected to have tools. null means the lifecycle handler
-        // hasn't finished creating resources yet. The frontend shows a spinner for null
-        // and the actual count for numbers.
         return toConnectorItem(connector, {
-          toolsCount: counts?.toolsCount || null,
-          workflowsCount: counts?.workflowsCount || null,
           oauthStatus: isOAuth
             ? authorizedConnectorIds.has(connector.id)
               ? 'authorized'

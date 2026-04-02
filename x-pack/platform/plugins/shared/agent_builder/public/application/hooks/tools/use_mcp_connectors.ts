@@ -7,7 +7,7 @@
 
 import { useQuery } from '@kbn/react-query';
 import type { Tool as McpTool } from '@kbn/mcp-client';
-import type { ConnectorItem, ListConnectorsResponse } from '../../../../common/http_api/tools';
+import type { ConnectorItem } from '../../../../common/http_api/tools';
 import { queryKeys } from '../../query_keys';
 import { useAgentBuilderServices } from '../use_agent_builder_service';
 
@@ -16,14 +16,12 @@ const EMPTY_TOOLS: readonly McpTool[] = [];
 
 export interface UseListConnectorsOptions {
   type?: string;
-  refetchInterval?: number | false | ((data: ListConnectorsResponse | undefined) => number | false);
 }
-export const useListConnectors = ({ type, refetchInterval }: UseListConnectorsOptions) => {
+export const useListConnectors = ({ type }: UseListConnectorsOptions) => {
   const { toolsService } = useAgentBuilderServices();
   const { data, ...queryFields } = useQuery({
     queryKey: queryKeys.tools.connectors.list(type),
     queryFn: () => toolsService.listConnectors({ type }),
-    refetchInterval,
   });
   return {
     connectors: data?.connectors ?? EMPTY_CONNECTORS,
