@@ -33,15 +33,6 @@ interface ConnectorLifecycleHandlerDeps {
   getStartServices: () => Promise<[CoreStart, { spaces?: SpacesPluginStart }, unknown]>;
 }
 
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 function renderWorkflowTemplate(
   rawYaml: string,
   templateInputs: Record<string, string>
@@ -50,6 +41,15 @@ function renderWorkflowTemplate(
   const parsed = parse(content);
   const shouldGenerateABTool = parsed?.tags?.includes('agent-builder-tool') ?? false;
   return { content, shouldGenerateABTool };
+}
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export function createConnectorLifecycleHandler(deps: ConnectorLifecycleHandlerDeps) {
