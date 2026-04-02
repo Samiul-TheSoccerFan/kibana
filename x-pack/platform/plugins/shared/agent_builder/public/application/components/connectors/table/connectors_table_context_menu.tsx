@@ -16,6 +16,7 @@ import {
 import { useConnectorOAuthDisconnect } from '@kbn/response-ops-oauth-hooks';
 import React, { useState } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
+import { OAUTH_STATUS } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
@@ -83,7 +84,7 @@ export const ConnectorContextMenu = ({ connector }: ConnectorContextMenuProps) =
     services: { application },
   } = useKibana();
   const canDelete = application.capabilities.actions?.delete === true;
-  const isAuthorized = connector.oauthStatus === 'authorized';
+  const isAuthorized = connector.oauthStatus === OAUTH_STATUS.AUTHORIZED;
   const closeMenu = () => setIsOpen(false);
 
   return (

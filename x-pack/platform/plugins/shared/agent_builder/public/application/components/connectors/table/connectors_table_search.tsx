@@ -10,6 +10,7 @@ import { EuiSearchBar, type Query } from '@elastic/eui';
 import { countBy } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
+import { OAUTH_STATUS } from '../../../../../common/http_api/tools';
 import { useListConnectors } from '../../../hooks/tools/use_mcp_connectors';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
@@ -65,7 +66,7 @@ const getConnectorsTableSearchConfig = ({
             multiSelect: 'or' as const,
             options: Object.keys(matchesByStatus).map((status) => {
               const statusName =
-                status === 'authorized'
+                status === OAUTH_STATUS.AUTHORIZED
                   ? labels.connectors.statusAuthorized
                   : labels.connectors.statusNotAuthorized;
               return {

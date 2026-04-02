@@ -37,6 +37,7 @@ import type {
   BulkDeleteConnectorResult,
   BulkDeleteConnectorsResponse,
 } from '../../../common/http_api/tools';
+import { OAUTH_STATUS } from '../../../common/http_api/tools';
 import { internalApiPath } from '../../../common/constants';
 import { AGENT_BUILDER_READ_SECURITY, TOOLS_WRITE_SECURITY } from '../route_security';
 import { getToolTypeInfo, bulkCreateMcpTools } from '../../services/tools/utils';
@@ -508,8 +509,8 @@ export function registerInternalToolsRoutes({
         return toConnectorItem(connector, {
           oauthStatus: isOAuth
             ? authorizedConnectorIds.has(connector.id)
-              ? 'authorized'
-              : 'disconnected'
+              ? OAUTH_STATUS.AUTHORIZED
+              : OAUTH_STATUS.NOT_AUTHORIZED
             : undefined,
         });
       });

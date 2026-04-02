@@ -10,6 +10,7 @@ import { EuiBadge, EuiFlexGroup, EuiFlexItem, EuiLink, EuiText, EuiToolTip } fro
 import { useConnectorOAuthConnect, OAuthRedirectMode } from '@kbn/response-ops-oauth-hooks';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
+import { OAUTH_STATUS } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
@@ -116,7 +117,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         width: '25%',
         render: (oauthStatus: ConnectorItem['oauthStatus'], connector: ConnectorItem) => {
           if (!oauthStatus) return <EuiText size="s">-</EuiText>;
-          if (oauthStatus === 'authorized') {
+          if (oauthStatus === OAUTH_STATUS.AUTHORIZED) {
             return (
               <EuiBadge
                 color="success"

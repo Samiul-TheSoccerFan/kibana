@@ -189,8 +189,15 @@ export interface ConnectorItem {
   isMissingSecrets?: boolean;
   isConnectorTypeDeprecated: boolean;
   authMode?: 'shared' | 'per-user';
-  oauthStatus?: 'authorized' | 'disconnected';
+  oauthStatus?: OAuthStatus;
 }
+
+export const OAUTH_STATUS = {
+  AUTHORIZED: 'authorized',
+  NOT_AUTHORIZED: 'not_authorized',
+} as const;
+
+export type OAuthStatus = (typeof OAUTH_STATUS)[keyof typeof OAUTH_STATUS];
 
 export interface McpConnectorItem extends ConnectorItem {
   actionTypeId: typeof MCP_CONNECTOR_ID;
