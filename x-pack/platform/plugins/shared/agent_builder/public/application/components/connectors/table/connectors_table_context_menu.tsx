@@ -13,102 +13,16 @@ import {
   EuiPopover,
   useGeneratedHtmlId,
 } from '@elastic/eui';
-import {
-  useConnectorOAuthConnect,
-  OAuthRedirectMode,
-  useConnectorOAuthDisconnect,
-} from '@kbn/response-ops-oauth-hooks';
-import { usesOAuthAuthorizationCode } from '@kbn/triggers-actions-ui-plugin/public';
+import { useConnectorOAuthDisconnect } from '@kbn/response-ops-oauth-hooks';
 import React, { useState } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
-import { useConnectorsActions, toActionConnector } from '../../../context/connectors_provider';
+import { useConnectorsActions } from '../../../context/connectors_provider';
 import { useKibana } from '../../../hooks/use_kibana';
 import { labels } from '../../../utils/i18n';
 
 export interface ConnectorContextMenuProps {
   connector: ConnectorItem;
 }
-
-/**
- * OAuth menu items for connectors using OAuth Authorization Code flow.
- */
-const OAuthMenuItems: React.FC<{
-  connector: ConnectorItem;
-  closeMenu: () => void;
-  onDisconnectRequest: () => void;
-}> = ({ connector, closeMenu, onDisconnectRequest }) => {
-  const {
-    services: {
-      notifications: { toasts },
-    },
-  } = useKibana();
-  const { invalidateConnectors } = useConnectorsActions();
-
-  const { connect, cancelConnect, isConnecting, isAwaitingCallback } = useConnectorOAuthConnect({
-    connectorId: connector.id,
-    redirectMode: OAuthRedirectMode.NewTab,
-    onSuccess: () => {
-      toasts.addSuccess({
-        title: labels.connectors.oauthConnectSuccessTitle,
-        text: labels.connectors.oauthConnectSuccessMessage,
-      });
-      invalidateConnectors();
-    },
-    onError: (error) => {
-      toasts.addDanger({
-        title: labels.connectors.oauthConnectErrorTitle,
-        text: error.message,
-      });
-    },
-  });
-
-  const { isDisconnecting } = useConnectorOAuthDisconnect({
-    connectorId: connector.id,
-  });
-
-  return (
-    <>
-      {isAwaitingCallback ? (
-        <EuiContextMenuItem
-          icon="cross"
-          key="cancel-authorization"
-          size="s"
-          onClick={() => {
-            cancelConnect();
-            closeMenu();
-          }}
-        >
-          {labels.connectors.cancelAuthorizationButtonLabel}
-        </EuiContextMenuItem>
-      ) : (
-        <EuiContextMenuItem
-          icon="link"
-          key="authorize"
-          size="s"
-          disabled={isDisconnecting}
-          onClick={() => {
-            connect();
-            closeMenu();
-          }}
-        >
-          {labels.connectors.authorizeButtonLabel}
-        </EuiContextMenuItem>
-      )}
-      <EuiContextMenuItem
-        icon="linkSlash"
-        key="disconnect"
-        size="s"
-        disabled={isConnecting || isAwaitingCallback}
-        onClick={() => {
-          onDisconnectRequest();
-          closeMenu();
-        }}
-      >
-        {labels.connectors.disconnectButtonLabel}
-      </EuiContextMenuItem>
-    </>
-  );
-};
 
 /**
  * Disconnect confirmation modal for OAuth connectors.
@@ -169,7 +83,7 @@ export const ConnectorContextMenu = ({ connector }: ConnectorContextMenuProps) =
     services: { application },
   } = useKibana();
   const canDelete = application.capabilities.actions?.delete === true;
-  const isOAuth = usesOAuthAuthorizationCode(toActionConnector(connector));
+  const isAuthorized = connector.oauthStatus === 'authorized';
   const closeMenu = () => setIsOpen(false);
 
   return (
@@ -200,12 +114,18 @@ export const ConnectorContextMenu = ({ connector }: ConnectorContextMenuProps) =
           >
             {labels.connectors.editConnectorButtonLabel}
           </EuiContextMenuItem>
-          {isOAuth && (
-            <OAuthMenuItems
-              connector={connector}
-              closeMenu={closeMenu}
-              onDisconnectRequest={() => setShowDisconnectConfirm(true)}
-            />
+          {isAuthorized && (
+            <EuiContextMenuItem
+              icon="linkSlash"
+              key="disconnect"
+              size="s"
+              onClick={() => {
+                setShowDisconnectConfirm(true);
+                closeMenu();
+              }}
+            >
+              {labels.connectors.disconnectButtonLabel}
+            </EuiContextMenuItem>
           )}
           {canDelete && (
             <EuiContextMenuItem

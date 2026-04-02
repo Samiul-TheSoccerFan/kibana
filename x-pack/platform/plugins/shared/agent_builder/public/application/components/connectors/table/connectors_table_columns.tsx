@@ -18,9 +18,9 @@ import { ConnectorContextMenu } from './connectors_table_context_menu';
 import { ConnectorQuickActions } from './connectors_table_quick_actions';
 
 /**
- * Clickable badge for disconnected OAuth connectors.
+ * Clickable badge for not-authorized OAuth connectors.
  */
-const NotConnectedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector }) => {
+const NotAuthorizedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector }) => {
   const {
     services: {
       notifications: { toasts },
@@ -47,16 +47,16 @@ const NotConnectedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector }
   });
 
   return (
-    <EuiToolTip content={labels.connectors.statusNotConnectedTooltip}>
+    <EuiToolTip content={labels.connectors.statusNotAuthorizedTooltip}>
       <EuiBadge
         color="hollow"
         iconType="link"
         iconSide="right"
         onClick={() => connect()}
-        onClickAriaLabel={labels.connectors.statusNotConnectedTooltip}
-        data-test-subj={`agentBuilderConnectorsNotConnectedBadge-${connector.id}`}
+        onClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
+        data-test-subj={`agentBuilderConnectorsNotAuthorizedBadge-${connector.id}`}
       >
-        {labels.connectors.statusNotConnected}
+        {labels.connectors.statusNotAuthorized}
       </EuiBadge>
     </EuiToolTip>
   );
@@ -78,7 +78,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'name',
         name: labels.connectors.nameColumn,
-        width: '40%',
+        width: '45%',
         render: (name: string, connector: ConnectorItem) => (
           <EuiLink
             data-test-subj={`agentBuilderConnectorsTableNameLink-${connector.id}`}
@@ -91,7 +91,7 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'actionTypeId',
         name: labels.connectors.typeColumn,
-        width: '15%',
+        width: '25%',
         render: (actionTypeId: string) => {
           const typeName = actionTypeRegistry.has(actionTypeId)
             ? actionTypeRegistry.get(actionTypeId).actionTypeTitle ?? actionTypeId
@@ -112,13 +112,13 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
       {
         field: 'oauthStatus',
         name: labels.connectors.statusColumn,
-        width: '15%',
+        width: '25%',
         render: (oauthStatus: ConnectorItem['oauthStatus'], connector: ConnectorItem) => {
-          if (!oauthStatus) return null;
+          if (!oauthStatus) return <EuiText size="s">-</EuiText>;
           if (oauthStatus === 'authorized') {
-            return <EuiBadge color="success">{labels.connectors.statusConnected}</EuiBadge>;
+            return <EuiBadge color="success">{labels.connectors.statusAuthorized}</EuiBadge>;
           }
-          return <NotConnectedBadge connector={connector} />;
+          return <NotAuthorizedBadge connector={connector} />;
         },
       },
       {

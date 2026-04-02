@@ -66,8 +66,8 @@ const getConnectorsTableSearchConfig = ({
             options: Object.keys(matchesByStatus).map((status) => {
               const statusName =
                 status === 'authorized'
-                  ? labels.connectors.statusConnected
-                  : labels.connectors.statusNotConnected;
+                  ? labels.connectors.statusAuthorized
+                  : labels.connectors.statusNotAuthorized;
               return {
                 value: status,
                 name: statusName,

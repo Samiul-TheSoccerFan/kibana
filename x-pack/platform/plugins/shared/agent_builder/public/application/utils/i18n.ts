@@ -847,16 +847,16 @@ export const labels = {
     statusColumn: i18n.translate('xpack.agentBuilder.connectors.column.status', {
       defaultMessage: 'Status',
     }),
-    statusConnected: i18n.translate('xpack.agentBuilder.connectors.status.connected', {
-      defaultMessage: 'Connected',
+    statusAuthorized: i18n.translate('xpack.agentBuilder.connectors.status.authorized', {
+      defaultMessage: 'Authorized',
     }),
-    statusNotConnected: i18n.translate('xpack.agentBuilder.connectors.status.notConnected', {
-      defaultMessage: 'Not connected',
+    statusNotAuthorized: i18n.translate('xpack.agentBuilder.connectors.status.notAuthorized', {
+      defaultMessage: 'Not authorized',
     }),
-    statusNotConnectedTooltip: i18n.translate(
-      'xpack.agentBuilder.connectors.status.notConnectedTooltip',
+    statusNotAuthorizedTooltip: i18n.translate(
+      'xpack.agentBuilder.connectors.status.notAuthorizedTooltip',
       {
-        defaultMessage: 'Click to connect via OAuth',
+        defaultMessage: 'Click to authorize via OAuth',
       }
     ),
     statusFilter: i18n.translate('xpack.agentBuilder.connectors.statusFilter', {
