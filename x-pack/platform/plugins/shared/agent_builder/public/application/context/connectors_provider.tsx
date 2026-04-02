@@ -20,7 +20,7 @@ import {
   useBulkDeleteConnectors,
 } from '../hooks/connectors/use_delete_connectors';
 
-export const toActionConnector = (c: ConnectorItem): ActionConnector =>
+const toActionConnector = (c: ConnectorItem): ActionConnector =>
   ({
     id: c.id,
     name: c.name,
