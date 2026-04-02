@@ -49,12 +49,13 @@ const NotAuthorizedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector 
   return (
     <EuiToolTip content={labels.connectors.statusNotAuthorizedTooltip}>
       <EuiBadge
-        color="hollow"
+        color="default"
         iconType="link"
         iconSide="right"
         onClick={() => connect()}
         onClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
         data-test-subj={`agentBuilderConnectorsNotAuthorizedBadge-${connector.id}`}
+        css={({ euiTheme }) => ({ padding: `${euiTheme.size.xs} ${euiTheme.size.s}` })}
       >
         {labels.connectors.statusNotAuthorized}
       </EuiBadge>
@@ -116,7 +117,14 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         render: (oauthStatus: ConnectorItem['oauthStatus'], connector: ConnectorItem) => {
           if (!oauthStatus) return <EuiText size="s">-</EuiText>;
           if (oauthStatus === 'authorized') {
-            return <EuiBadge color="success">{labels.connectors.statusAuthorized}</EuiBadge>;
+            return (
+              <EuiBadge
+                color="success"
+                css={({ euiTheme }) => ({ padding: `${euiTheme.size.xs} ${euiTheme.size.s}` })}
+              >
+                {labels.connectors.statusAuthorized}
+              </EuiBadge>
+            );
           }
           return <NotAuthorizedBadge connector={connector} />;
         },
