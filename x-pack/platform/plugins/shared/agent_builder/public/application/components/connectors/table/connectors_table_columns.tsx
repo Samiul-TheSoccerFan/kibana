@@ -55,6 +55,8 @@ const NotAuthorizedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector 
         iconSide="right"
         onClick={() => connect()}
         onClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
+        iconOnClick={() => connect()}
+        iconOnClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
         data-test-subj={`agentBuilderConnectorsNotAuthorizedBadge-${connector.id}`}
         css={({ euiTheme }) => ({ padding: `${euiTheme.size.xs} ${euiTheme.size.s}` })}
       >
