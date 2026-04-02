@@ -847,12 +847,18 @@ export const labels = {
     statusColumn: i18n.translate('xpack.agentBuilder.connectors.column.status', {
       defaultMessage: 'Status',
     }),
-    statusAuthorized: i18n.translate('xpack.agentBuilder.connectors.status.authorized', {
-      defaultMessage: 'Authorized',
+    statusConnected: i18n.translate('xpack.agentBuilder.connectors.status.connected', {
+      defaultMessage: 'Connected',
     }),
-    statusDisconnected: i18n.translate('xpack.agentBuilder.connectors.status.disconnected', {
-      defaultMessage: 'Disconnected',
+    statusNotConnected: i18n.translate('xpack.agentBuilder.connectors.status.notConnected', {
+      defaultMessage: 'Not connected',
     }),
+    statusNotConnectedTooltip: i18n.translate(
+      'xpack.agentBuilder.connectors.status.notConnectedTooltip',
+      {
+        defaultMessage: 'Click to connect via OAuth',
+      }
+    ),
     statusFilter: i18n.translate('xpack.agentBuilder.connectors.statusFilter', {
       defaultMessage: 'Status',
     }),

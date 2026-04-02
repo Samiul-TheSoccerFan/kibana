@@ -6,7 +6,8 @@
  */
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
-import { EuiFlexGroup, EuiFlexItem, EuiLink, EuiText } from '@elastic/eui';
+import { EuiBadge, EuiFlexGroup, EuiFlexItem, EuiLink, EuiText, EuiToolTip } from '@elastic/eui';
+import { useConnectorOAuthConnect, OAuthRedirectMode } from '@kbn/response-ops-oauth-hooks';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
 import { useConnectorsActions } from '../../../context/connectors_provider';
@@ -15,6 +16,51 @@ import { labels } from '../../../utils/i18n';
 import { ConnectorTypeIcon } from '../connector_type_icon';
 import { ConnectorContextMenu } from './connectors_table_context_menu';
 import { ConnectorQuickActions } from './connectors_table_quick_actions';
+
+/**
+ * Clickable badge for disconnected OAuth connectors.
+ */
+const NotConnectedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector }) => {
+  const {
+    services: {
+      notifications: { toasts },
+    },
+  } = useKibana();
+  const { invalidateConnectors } = useConnectorsActions();
+
+  const { connect } = useConnectorOAuthConnect({
+    connectorId: connector.id,
+    redirectMode: OAuthRedirectMode.NewTab,
+    onSuccess: () => {
+      toasts.addSuccess({
+        title: labels.connectors.oauthConnectSuccessTitle,
+        text: labels.connectors.oauthConnectSuccessMessage,
+      });
+      invalidateConnectors();
+    },
+    onError: (error) => {
+      toasts.addDanger({
+        title: labels.connectors.oauthConnectErrorTitle,
+        text: error.message,
+      });
+    },
+  });
+
+  return (
+    <EuiToolTip content={labels.connectors.statusNotConnectedTooltip}>
+      <EuiBadge
+        color="hollow"
+        iconType="link"
+        iconSide="right"
+        onClick={() => connect()}
+        onClickAriaLabel={labels.connectors.statusNotConnectedTooltip}
+        data-test-subj={`agentBuilderConnectorsNotConnectedBadge-${connector.id}`}
+      >
+        {labels.connectors.statusNotConnected}
+      </EuiBadge>
+    </EuiToolTip>
+  );
+};
 
 export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<ConnectorItem>> => {
   const { editConnector } = useConnectorsActions();
@@ -67,15 +113,12 @@ export const useConnectorsTableColumns = (): Array<EuiBasicTableColumn<Connector
         field: 'oauthStatus',
         name: labels.connectors.statusColumn,
         width: '15%',
-        render: (oauthStatus: ConnectorItem['oauthStatus']) => {
+        render: (oauthStatus: ConnectorItem['oauthStatus'], connector: ConnectorItem) => {
           if (!oauthStatus) return null;
-          return (
-            <EuiText size="s" color={oauthStatus === 'authorized' ? 'success' : 'subdued'}>
-              {oauthStatus === 'authorized'
-                ? labels.connectors.statusAuthorized
-                : labels.connectors.statusDisconnected}
-            </EuiText>
-          );
+          if (oauthStatus === 'authorized') {
+            return <EuiBadge color="success">{labels.connectors.statusConnected}</EuiBadge>;
+          }
+          return <NotConnectedBadge connector={connector} />;
         },
       },
       {
