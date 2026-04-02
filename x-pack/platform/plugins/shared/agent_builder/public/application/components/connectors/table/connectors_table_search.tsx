@@ -105,7 +105,7 @@ export const useConnectorsTableSearch = (): ConnectorsTableSearch => {
   const [results, setResults] = useState<ConnectorItem[]>(connectors);
   const currentQueryRef = useRef<Query | null>(null);
 
-  // Re-apply the current search query when connectors update (e.g., from background polling)
+  // Re-apply the current search query when connectors data changes (e.g., after create/delete)
   useEffect(() => {
     const filtered = currentQueryRef.current
       ? EuiSearchBar.Query.execute(currentQueryRef.current, connectors, {
