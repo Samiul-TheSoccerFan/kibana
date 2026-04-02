@@ -510,7 +510,7 @@ export function registerInternalToolsRoutes({
           oauthStatus: isOAuth
             ? authorizedConnectorIds.has(connector.id)
               ? OAUTH_STATUS.AUTHORIZED
-              : OAUTH_STATUS.NOT_AUTHORIZED
+              : OAUTH_STATUS.DISCONNECTED
             : undefined,
         });
       });

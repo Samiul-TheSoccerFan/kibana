@@ -194,7 +194,7 @@ export interface ConnectorItem {
 
 export const OAUTH_STATUS = {
   AUTHORIZED: 'authorized',
-  NOT_AUTHORIZED: 'not_authorized',
+  DISCONNECTED: 'disconnected',
 } as const;
 
 export type OAuthStatus = (typeof OAUTH_STATUS)[keyof typeof OAUTH_STATUS];
