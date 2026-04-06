@@ -6,7 +6,15 @@
  */
 
 import type { EuiBasicTableColumn } from '@elastic/eui';
-import { EuiBadge, EuiFlexGroup, EuiFlexItem, EuiLink, EuiText, EuiToolTip } from '@elastic/eui';
+import {
+  EuiBadge,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiIcon,
+  EuiLink,
+  EuiText,
+  EuiToolTip,
+} from '@elastic/eui';
 import { useConnectorOAuthConnect, OAuthRedirectMode } from '@kbn/response-ops-oauth-hooks';
 import React, { useMemo } from 'react';
 import type { ConnectorItem } from '../../../../../common/http_api/tools';
@@ -51,16 +59,15 @@ const NotAuthorizedBadge: React.FC<{ connector: ConnectorItem }> = ({ connector 
     <EuiToolTip content={labels.connectors.statusNotAuthorizedTooltip}>
       <EuiBadge
         color="default"
-        iconType="link"
-        iconSide="right"
         onClick={() => connect()}
         onClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
-        iconOnClick={() => connect()}
-        iconOnClickAriaLabel={labels.connectors.statusNotAuthorizedTooltip}
         data-test-subj={`agentBuilderConnectorsNotAuthorizedBadge-${connector.id}`}
-        css={({ euiTheme }) => ({ padding: `${euiTheme.size.xs} ${euiTheme.size.s}` })}
+        css={({ euiTheme }) => ({
+          padding: `${euiTheme.size.xs} ${euiTheme.size.s}`,
+          cursor: 'pointer',
+        })}
       >
-        {labels.connectors.statusNotAuthorized}
+        {labels.connectors.statusNotAuthorized} <EuiIcon type="link" size="s" aria-hidden={true} />
       </EuiBadge>
     </EuiToolTip>
   );
