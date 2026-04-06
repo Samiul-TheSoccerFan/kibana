@@ -27,11 +27,13 @@ export const AgentBuilderConnectors = () => {
           borderBlockEnd: 'none',
         })}
         rightSideItems={[
-          hasAllPrivileges && (
-            <EuiButton key="create" fill iconType="plusInCircle" onClick={openCreateFlyout}>
-              <EuiText size="s">{labels.connectors.createButton}</EuiText>
-            </EuiButton>
-          ),
+          ...(hasAllPrivileges
+            ? [
+                <EuiButton key="create" fill iconType="plusInCircle" onClick={openCreateFlyout}>
+                  <EuiText size="s">{labels.connectors.createButton}</EuiText>
+                </EuiButton>,
+              ]
+            : []),
         ]}
       />
       <KibanaPageTemplate.Section>
